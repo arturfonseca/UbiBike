@@ -10,54 +10,45 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="pt.ulisboa.tecnico.cmov.ubibike.MessengerActivity"
-    tools:showIn="@layout/activity_messenger">
-
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="HOME"
-        android:id="@+id/button3"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+    tools:showIn="@layout/activity_messenger"
+    android:background="@drawable/black" >
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="A to B: qwertyuio \n A to C:aaa \n B to A: bbb"
-        android:id="@+id/textView3"
-        android:layout_below="@+id/button3"
+        android:text="A to B: qwertyuio \nA to C:aaa \nB to A: bbb\ndjdjdjd\n\n\n\n\n\ndddd\naaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        android:id="@+id/textView1"
+        android:singleLine="false"
+        android:layout_above="@+id/editText1"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:singleLine="false"
-        android:lines="10" />
+        android:textSize="18sp"
+        android:textColor="#FFFFFF" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Send"
-        android:id="@+id/button4"
-        android:layout_marginRight="56dp"
-        android:layout_marginEnd="56dp"
-        android:layout_below="@+id/textView3"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        android:id="@+id/button1"
+        android:layout_marginBottom="45dp"
+        android:layout_alignParentBottom="true"
+        android:layout_alignRight="@+id/textView1"
+        android:layout_alignEnd="@+id/textView1" />
 
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/editText"
-        android:layout_below="@+id/textView3"
+        android:id="@+id/editText1"
+        android:text="abcef"
+        android:layout_alignBaseline="@+id/button1"
+        android:layout_alignBottom="@+id/button1"
+        android:layout_toLeftOf="@+id/button1"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:text="abcef" />
-
-    <EditText
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/editText2"
-        android:layout_alignBottom="@+id/button4"
-        android:layout_toRightOf="@+id/button3"
-        android:text="B" />
+        android:textSize="18sp"
+        android:textColor="#FFFFFF"/>
 
 </RelativeLayout>

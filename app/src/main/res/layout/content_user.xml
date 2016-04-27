@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior"
+    tools:context="pt.ulisboa.tecnico.cmov.ubibike.UserActivity"
+    tools:showIn="@layout/activity_user"
+    android:background="@drawable/back2" >
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="@string/user_tag"
+        android:id="@+id/textView2"
+        android:textSize="25sp"
+        android:layout_alignParentLeft="true"
+        android:layout_marginTop="10dp" />
+
+    <android.inputmethodservice.ExtractEditText
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="Artur"
+        android:id="@+id/extractEditText1"
+        android:textSize="20sp"
+        android:layout_alignTop="@+id/textView2"
+        android:layout_toRightOf="@+id/textView2" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/register_tag"
+        android:id="@+id/button1"
+        android:padding="20sp"
+        android:layout_below="@+id/extractEditText1"
+        android:layout_alignRight="@+id/extractEditText1"
+        android:layout_alignEnd="@+id/extractEditText1"
+        android:layout_marginBottom="20dp" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/show_user_tag"
+        android:id="@+id/button2"
+        android:padding="20sp"
+        android:layout_below="@+id/extractEditText1"
+        android:layout_alignParentLeft="true" />
+
+    <Button
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/send_traj_tag"
+        android:id="@+id/button3"
+        style="@style/ButtonText"
+        android:background="@drawable/btn_black"
+        android:layout_marginTop="30dp"
+        android:layout_below="@+id/button1"
+        android:layout_centerHorizontal="true" >
+    </Button>
+
+    <Button
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/recent_tag"
+        android:id="@+id/button4"
+        style="@style/ButtonText"
+        android:background="@drawable/btn_black"
+        android:layout_marginTop="30dp"
+        android:layout_below="@+id/button3"
+        android:layout_centerHorizontal="true" >
+    </Button>
+
+    <Button
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/past_tag"
+        android:id="@+id/button5"
+        style="@style/ButtonText"
+        android:background="@drawable/btn_black"
+        android:layout_marginTop="30dp"
+        android:layout_below="@+id/button4"
+        android:layout_centerHorizontal="true" >
+    </Button>
+
+    <!--
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/send_traj_tag"
+            android:id="@+id/button3"
+            android:padding="20sp"
+            android:layout_marginBottom="28dp"
+            android:layout_above="@+id/button4"
+            android:layout_alignLeft="@+id/button4"
+            android:layout_alignStart="@+id/button4"
+            android:layout_alignRight="@+id/button4"
+            android:layout_alignEnd="@+id/button4" />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/show_traj_tag"
+            android:id="@+id/button4"
+            android:padding="20sp"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true" />
+    -->
+</RelativeLayout>

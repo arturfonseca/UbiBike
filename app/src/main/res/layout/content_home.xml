@@ -10,61 +10,127 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="pt.ulisboa.tecnico.cmov.ubibike.HomeActivity"
-    tools:showIn="@layout/activity_home">
+    tools:showIn="@layout/activity_home"
+    android:background="@drawable/back1" >
 
-    <Button
-        style="?android:attr/buttonStyleSmall"
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Messenger"
-        android:id="@+id/button5"
-        android:layout_marginTop="41dp"
-        android:layout_alignParentTop="true"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="Status: "
+        android:id="@+id/textView1"
+        android:layout_marginTop="10dp"
+        android:textSize="25sp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:text="Coordinates: "
+        android:id="@+id/textView2"
+        android:layout_marginTop="15dp"
+        android:layout_below="@+id/textView1"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_marginLeft="51dp"
-        android:layout_marginStart="51dp" />
+        android:textSize="25sp"
+        android:layout_marginBottom="20dp" />
 
     <Button
-        style="?android:attr/buttonStyleSmall"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/user_label"
+        android:id="@+id/button1"
+        style="@style/ButtonText"
+        android:background="@drawable/btn_black"
+        android:layout_marginTop="30dp"
+        android:layout_below="@+id/textView2"
+        android:layout_centerHorizontal="true">
+    </Button>
+
+    <Button
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/points_label"
+        android:id="@+id/button2"
+        style="@style/ButtonText"
+        android:background="@drawable/btn_black"
+        android:layout_below="@+id/button1"
+        android:layout_centerHorizontal="true">
+    </Button>
+
+    <Button
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/booking_label"
+        android:id="@+id/button3"
+        style="@style/ButtonText"
+        android:background="@drawable/btn_black"
+        android:layout_below="@+id/button2"
+        android:layout_centerHorizontal="true">
+    </Button>
+
+    <Button
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/messenger_label"
+        android:id="@+id/button4"
+        style="@style/ButtonText"
+        android:background="@drawable/btn_black"
+        android:layout_below="@+id/button3"
+        android:layout_centerHorizontal="true">
+    </Button>
+
+    <!--
+    <Button
+        style="?android:attr/buttonStyle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="POINTS"
+        android:text="@string/user_label"
         android:id="@+id/button6"
-        android:layout_marginTop="43dp"
-        android:layout_below="@+id/button5"
-        android:layout_alignLeft="@+id/button5"
-        android:layout_alignStart="@+id/button5" />
+        android:layout_marginBottom="25dp"
+        android:layout_above="@+id/button2"
+        android:layout_alignLeft="@+id/button3"
+        android:layout_alignStart="@+id/button3"
+        android:layout_alignRight="@+id/button3"
+        android:layout_alignEnd="@+id/button2"
+        android:padding="20sp"/>
 
     <Button
         style="?android:attr/buttonStyleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="BOOKING"
-        android:id="@+id/button7"
+        android:text="@string/points_label"
+        android:id="@+id/button2"
         android:layout_centerVertical="true"
-        android:layout_alignLeft="@+id/button6"
-        android:layout_alignStart="@+id/button6" />
+        android:layout_alignLeft="@+id/button3"
+        android:layout_alignStart="@+id/button3"
+        android:layout_alignRight="@+id/button3"
+        android:layout_alignEnd="@+id/button3"
+        android:padding="20sp"/>
 
-    <TextView
+    <Button
+        style="?android:attr/buttonStyleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="Status: riding"
-        android:id="@+id/textView4"
-        android:layout_alignTop="@+id/button5"
-        android:layout_toRightOf="@+id/button5"
-        android:layout_toEndOf="@+id/button5"
-        android:layout_marginLeft="54dp"
-        android:layout_marginStart="54dp" />
+        android:text="@string/booking_label"
+        android:id="@+id/button3"
+        android:layout_below="@+id/button2"
+        android:layout_marginTop="25dp"
+        android:layout_centerHorizontal="true"
+        android:padding="20sp" />
 
-    <TextView
+    <Button
+        style="?android:attr/buttonStyleSmall"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
-        android:text="Coordinates: 123, 456"
-        android:id="@+id/textView5"
-        android:layout_below="@+id/button5"
-        android:layout_alignLeft="@+id/textView4"
-        android:layout_alignStart="@+id/textView4" />
+        android:text="@string/messenger_label"
+        android:id="@+id/button4"
+        android:layout_below="@+id/button3"
+        android:layout_marginTop="25dp"
+        android:layout_alignLeft="@+id/button3"
+        android:layout_alignStart="@+id/button3"
+        android:layout_alignRight="@+id/button3"
+        android:layout_alignEnd="@+id/button3"
+        android:padding="20sp" />
+-->
 </RelativeLayout>
