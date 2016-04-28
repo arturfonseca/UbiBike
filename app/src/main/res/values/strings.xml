@@ -8,19 +8,25 @@
     <string name="title_activity_user">User Menu</string>
     <string name="title_activity_book">Booking</string>
     <string name="title_activity_recent">Past Trajectories</string>
-
+    <string name="title_activity_login">Login</string>
+    <string name="title_activity_register">Register</string>
 
     <string name="messenger_label">Messenger</string>
     <string name="points_label">Points Menu</string>
     <string name="user_label">User Menu</string>
     <string name="booking_label">Booking Menu</string>
 
+    <string name="register_tag">Register</string>
+    <string name="register_user_tag">Register user</string>
+
     <string name="user_tag">User: </string>
+    <string name="pass_tag">Password: </string>
+    <string name="pass_retype_tag">Retype Password: </string>
+
     <string name="points_tag">Points: </string>
     <string name="send_tag">Send</string>
     <string name="collect_tag">Collect Points</string>
 
-    <string name="register_tag">Register user</string>
     <string name="show_user_tag">Show user information</string>
     <string name="send_traj_tag">Send trajectory</string>
     <string name="recent_tag">Recent trajectories</string>
