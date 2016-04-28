@@ -6,7 +6,9 @@
     <string name="title_activity_messenger">Messenger</string>
     <string name="title_activity_points">Points</string>
     <string name="title_activity_user">User Menu</string>
-    <string name="title_activity_book">Booking Menu</string>
+    <string name="title_activity_book">Booking</string>
+    <string name="title_activity_recent">Past Trajectories</string>
+
 
     <string name="messenger_label">Messenger</string>
     <string name="points_label">Points Menu</string>

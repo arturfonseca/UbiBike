@@ -33,6 +33,10 @@
         <activity
             android:name=".UserActivity"
             android:label="@string/title_activity_user"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity
+            android:name=".PastActivity"
+            android:label="@string/title_activity_recent"
             android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
