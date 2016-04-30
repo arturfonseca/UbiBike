@@ -16,7 +16,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Status: "
         android:id="@+id/textView1"
         android:layout_marginTop="10dp"
@@ -25,7 +25,16 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:id="@+id/textViewStatus"
+        android:layout_alignBottom="@+id/textView1"
+        android:layout_toRightOf="@+id/textView1"
+        android:textSize="25sp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="Coordinates: "
         android:id="@+id/textView2"
         android:layout_marginTop="15dp"
@@ -35,11 +44,20 @@
         android:textSize="25sp"
         android:layout_marginBottom="20dp" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:id="@+id/textViewCoordinates"
+        android:layout_alignBottom="@+id/textView2"
+        android:layout_toRightOf="@+id/textView2"
+        android:textSize="25sp" />
+
     <Button
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="@string/user_label"
-        android:id="@+id/button1"
+        android:id="@+id/buttonUserMenu"
         style="@style/ButtonText"
         android:background="@drawable/btn_black"
         android:layout_marginTop="30dp"
@@ -51,10 +69,10 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="@string/points_label"
-        android:id="@+id/button2"
+        android:id="@+id/buttonPointsMenu"
         style="@style/ButtonText"
         android:background="@drawable/btn_black"
-        android:layout_below="@+id/button1"
+        android:layout_below="@+id/buttonUserMenu"
         android:layout_centerHorizontal="true">
     </Button>
 
@@ -62,10 +80,10 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="@string/booking_label"
-        android:id="@+id/button3"
+        android:id="@+id/buttonBookMenu"
         style="@style/ButtonText"
         android:background="@drawable/btn_black"
-        android:layout_below="@+id/button2"
+        android:layout_below="@+id/buttonPointsMenu"
         android:layout_centerHorizontal="true">
     </Button>
 
@@ -73,64 +91,13 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="@string/messenger_label"
-        android:id="@+id/button4"
+        android:id="@+id/buttonMessenger"
         style="@style/ButtonText"
         android:background="@drawable/btn_black"
-        android:layout_below="@+id/button3"
+        android:layout_below="@+id/buttonBookMenu"
         android:layout_centerHorizontal="true">
     </Button>
 
-    <!--
-    <Button
-        style="?android:attr/buttonStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/user_label"
-        android:id="@+id/button6"
-        android:layout_marginBottom="25dp"
-        android:layout_above="@+id/button2"
-        android:layout_alignLeft="@+id/button3"
-        android:layout_alignStart="@+id/button3"
-        android:layout_alignRight="@+id/button3"
-        android:layout_alignEnd="@+id/button2"
-        android:padding="20sp"/>
 
-    <Button
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/points_label"
-        android:id="@+id/button2"
-        android:layout_centerVertical="true"
-        android:layout_alignLeft="@+id/button3"
-        android:layout_alignStart="@+id/button3"
-        android:layout_alignRight="@+id/button3"
-        android:layout_alignEnd="@+id/button3"
-        android:padding="20sp"/>
 
-    <Button
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/booking_label"
-        android:id="@+id/button3"
-        android:layout_below="@+id/button2"
-        android:layout_marginTop="25dp"
-        android:layout_centerHorizontal="true"
-        android:padding="20sp" />
-
-    <Button
-        style="?android:attr/buttonStyleSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/messenger_label"
-        android:id="@+id/button4"
-        android:layout_below="@+id/button3"
-        android:layout_marginTop="25dp"
-        android:layout_alignLeft="@+id/button3"
-        android:layout_alignStart="@+id/button3"
-        android:layout_alignRight="@+id/button3"
-        android:layout_alignEnd="@+id/button3"
-        android:padding="20sp" />
--->
 </RelativeLayout>

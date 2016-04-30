@@ -20,7 +20,7 @@ public class HomeActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         */
 
-        Button b1 = (Button) findViewById(R.id.button1);
+        Button b1 = (Button) findViewById(R.id.buttonUserMenu);
         b1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -28,7 +28,7 @@ public class HomeActivity extends AppCompatActivity {
             }
         });
 
-        Button b2 = (Button) findViewById(R.id.button2);
+        Button b2 = (Button) findViewById(R.id.buttonPointsMenu);
         b2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -36,7 +36,7 @@ public class HomeActivity extends AppCompatActivity {
             }
         });
 
-        Button b3 = (Button) findViewById(R.id.button3);
+        Button b3 = (Button) findViewById(R.id.buttonBookMenu);
         b3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -44,7 +44,7 @@ public class HomeActivity extends AppCompatActivity {
             }
         });
 
-        Button b4 = (Button) findViewById(R.id.button4);
+        Button b4 = (Button) findViewById(R.id.buttonMessenger);
         b4.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

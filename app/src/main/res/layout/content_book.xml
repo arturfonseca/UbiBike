@@ -17,7 +17,7 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="@string/list_tag"
-        android:id="@+id/button1"
+        android:id="@+id/buttonListStations"
         style="@style/ButtonText"
         android:background="@drawable/btn_black"
         android:layout_alignParentTop="true"
@@ -28,10 +28,10 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="@string/book_tag"
-        android:id="@+id/button2"
+        android:id="@+id/buttonBookBike"
         style="@style/ButtonText"
         android:background="@drawable/btn_black"
-        android:layout_below="@+id/button1"
+        android:layout_below="@+id/buttonListStations"
         android:layout_centerHorizontal="true" >
     </Button>
 
@@ -39,10 +39,10 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="@string/pick_tag"
-        android:id="@+id/button3"
+        android:id="@+id/buttonPickUp"
         style="@style/ButtonText"
         android:background="@drawable/btn_black"
-        android:layout_below="@+id/button2"
+        android:layout_below="@+id/buttonBookBike"
         android:layout_centerHorizontal="true" >
     </Button>
 
@@ -50,10 +50,10 @@
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:text="@string/drop_tag"
-        android:id="@+id/button4"
+        android:id="@+id/buttonDropOff"
         android:background="@drawable/btn_black"
         style="@style/ButtonText"
-        android:layout_below="@+id/button3"
+        android:layout_below="@+id/buttonPickUp"
         android:layout_centerHorizontal="true" >
     </Button>
 

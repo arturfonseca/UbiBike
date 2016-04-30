@@ -19,7 +19,7 @@
     <string name="register_tag">Register</string>
     <string name="register_user_tag">Register user</string>
 
-    <string name="user_tag">User: </string>
+    <string name="user_tag">Username: </string>
     <string name="pass_tag">Password: </string>
     <string name="pass_retype_tag">Retype Password: </string>
 

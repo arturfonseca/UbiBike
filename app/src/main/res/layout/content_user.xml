@@ -20,17 +20,17 @@
         android:text="@string/user_tag"
         android:id="@+id/textView"
         android:layout_alignParentLeft="true"
-        android:layout_marginTop="20dp"
-        android:layout_marginBottom="25dp" />
+        android:layout_marginTop="20dp" />
 
-    <android.inputmethodservice.ExtractEditText
+    <EditText
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/extractEditText1"
+        android:inputType="textPersonName"
+        android:id="@+id/extractUsername"
+        android:ems="10"
         android:textSize="20sp"
-        android:layout_alignBottom="@+id/textView"
-        android:layout_toRightOf="@+id/textView"
-        android:layout_toEndOf="@+id/textView" />
+        android:layout_below="@+id/textView"
+        android:layout_marginBottom="25dp" />
 
     <Button
         android:layout_width="fill_parent"
@@ -39,7 +39,7 @@
         android:id="@+id/buttonShowInfo"
         style="@style/ButtonText"
         android:background="@drawable/btn_black"
-        android:layout_below="@+id/textView"
+        android:layout_below="@+id/extractUsername"
         android:layout_centerHorizontal="true" >
     </Button>
 

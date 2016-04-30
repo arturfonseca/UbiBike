@@ -31,19 +31,19 @@
     <ListView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/listView"
+        android:id="@+id/listViewMessenger"
         android:layout_alignParentTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentRight="true"
         android:textSize="18sp"
         android:textColor="#FFFFFF"
-        android:layout_above="@+id/editText1" />
+        android:layout_above="@+id/editTextToSend" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Send"
-        android:id="@+id/button1"
+        android:id="@+id/buttonSend"
         android:layout_marginBottom="45dp"
         android:layout_alignParentBottom="true"
         android:layout_alignParentRight="true" />
@@ -51,12 +51,11 @@
     <EditText
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/editText1"
-        android:text="abcef"
-        android:layout_alignBaseline="@+id/button1"
-        android:layout_toLeftOf="@+id/button1"
+        android:id="@+id/editTextToSend"
+        android:layout_alignBaseline="@+id/buttonSend"
+        android:layout_toLeftOf="@+id/buttonSend"
         android:layout_alignParentLeft="true"
         android:textSize="18sp"
-        android:textColor="#FFFFFF"/>
+        android:textColor="#FFFFFF" />
 
 </RelativeLayout>
