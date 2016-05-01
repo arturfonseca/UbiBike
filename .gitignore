@@ -6,6 +6,7 @@
 /.idea/jsLibraryMappings.xml
 /.idea/libraries
 /.idea/gradle.xml
+.idea/gradle.xml
 
 *.iml
 .gradle
