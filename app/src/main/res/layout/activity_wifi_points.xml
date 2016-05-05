@@ -5,9 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:context="pt.ulisboa.tecnico.cmov.ubibike.MessengerActivity">
+    tools:context="pt.ulisboa.tecnico.cmov.ubibike.WifiPointsActivity">
 
-    <!--
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -21,8 +20,7 @@
             app:popupTheme="@style/AppTheme.PopupOverlay" />
 
     </android.support.design.widget.AppBarLayout>
-    -->
 
-    <include layout="@layout/content_messenger" />
+    <include layout="@layout/content_wifi_points" />
 
 </android.support.design.widget.CoordinatorLayout>

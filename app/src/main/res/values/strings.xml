@@ -10,11 +10,13 @@
     <string name="title_activity_recent">Past Trajectories</string>
     <string name="title_activity_login">Login</string>
     <string name="title_activity_register">Register</string>
+    <string name="title_activity_wifi_points">Wifi Points</string>
 
     <string name="messenger_label">Messenger</string>
     <string name="points_label">Points Menu</string>
     <string name="user_label">User Menu</string>
     <string name="booking_label">Booking Menu</string>
+    <string name="points_now_label">Wifi Points Menu</string>
 
     <string name="register_tag">Register</string>
     <string name="register_user_tag">Register user</string>
@@ -37,6 +39,9 @@
     <string name="pick_tag">Bike pick up</string>
     <string name="drop_tag">Bike drop off</string>
 
+    <string name="title_activity_trajectory_map">Map</string>
+    <string name="title_activity_stations_map">Map</string>
+
     <style name="ButtonText">
         <item name="android:layout_width">fill_parent</item>
         <item name="android:layout_height">wrap_content</item>
@@ -50,8 +55,5 @@
         <item name="android:shadowDy">1</item>
         <item name="android:shadowRadius">2</item>
     </style>
-
-    <string name="title_activity_trajectory_map">Map</string>
-    <string name="title_activity_stations_map">Map</string>
 
 </resources>

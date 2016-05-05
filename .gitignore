@@ -13,7 +13,11 @@
 .idea/jsLibraryMappings.xml
 .idea/libraries
 .idea/gradle.xml
-.idea/gradle.xml
+.idea/runConfigurations.xml
+.idea/modules.xml
+.idea/misc.xml
+.idea/encodings.xml
+.idea/compiler.xml
 
 *.iml
 .gradle
@@ -23,6 +27,7 @@
 /captures
 
 gradle
+gradle/*
 build/
 
 # Ignore Gradle GUI config

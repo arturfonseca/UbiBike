@@ -58,7 +58,7 @@ public class RegisterActivity extends AppCompatActivity {
         else if (i == 1)
             alertDialogBuilder.setMessage("Error trying to register\nPlease try again");
 
-        alertDialogBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+        alertDialogBuilder.setNeutralButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface arg0, int arg1) {
                 // User clicked OK

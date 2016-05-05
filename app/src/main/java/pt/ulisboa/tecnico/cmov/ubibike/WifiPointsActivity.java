@@ -7,16 +7,18 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 
-public class PointsActivity extends AppCompatActivity {
+public class WifiPointsActivity extends AppCompatActivity {
 
-    /* THIS CLASS SEND/RECEIVE PONTS TO SERVER ONLY */
+    /* THIS CLASS SEND/RECEIVE PONTS WITH WIFI P2P AND ALSO TO SERVER */
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_points);
+        setContentView(R.layout.activity_wifi_points);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-/*
+
+        /*
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override

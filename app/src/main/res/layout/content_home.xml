@@ -98,6 +98,15 @@
         android:layout_centerHorizontal="true">
     </Button>
 
-
+    <Button
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/points_now_label"
+        android:id="@+id/buttonPointsNow"
+        style="@style/ButtonText"
+        android:background="@drawable/btn_black"
+        android:layout_below="@+id/buttonMessenger"
+        android:layout_centerHorizontal="true">
+    </Button>
 
 </RelativeLayout>

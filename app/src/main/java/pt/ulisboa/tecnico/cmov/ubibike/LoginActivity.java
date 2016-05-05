@@ -73,16 +73,11 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
-    public Context getActivity() {
-        return this.getActivity();
-    }
-
     public void showError(){
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
         alertDialogBuilder.setMessage("Error trying to login\nPlease try again");
 
-        alertDialogBuilder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            @Override
+        alertDialogBuilder.setNeutralButton("OK", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface arg0, int arg1) {
                 // User clicked OK
             }
