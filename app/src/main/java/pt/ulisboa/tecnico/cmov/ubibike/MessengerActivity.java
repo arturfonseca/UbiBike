@@ -1,7 +1,9 @@
 package pt.ulisboa.tecnico.cmov.ubibike;
 
+import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
@@ -13,13 +15,15 @@ import android.os.IBinder;
 import android.os.Messenger;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.CompoundButton;
+import android.widget.CompoundButton.OnCheckedChangeListener;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -43,7 +47,8 @@ import pt.inesc.termite.wifidirect.SimWifiP2pManager.GroupInfoListener;
 public class MessengerActivity extends AppCompatActivity implements PeerListListener, GroupInfoListener {
 
     public static final String PREFS_NAME = "UserAccount";
-    private String userName;
+    private String userName = null;
+    private String name = null;
 
     private boolean mBound = false;
     private SimWifiP2pManager mManager = null;
@@ -53,24 +58,22 @@ public class MessengerActivity extends AppCompatActivity implements PeerListList
     private SimWifiP2pSocketServer mSrvSocket = null;
     private SimWifiP2pSocket mCliSocket = null;
 
-    private CustomAdapter cAdapter = null;
     private ListView lv = null;
+    private CustomAdapter cAdapter = null;
+    private LinkedHashMap<String, String> peersIP = new LinkedHashMap<>();
+
     private TextView mTextInput;
     private EditText mTextOutput;
     private boolean isMessenger = false;
-
+    private boolean isServerRunning = false;
     private IncommingCommTask iCommTask = null;
-    private OutgoingCommTask oCommTask = null;
-
-    private LinkedHashMap<String, String> peersIP = new LinkedHashMap<>();
-    private String name = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_list_messenger);
-        this.buttonUpdateInitState();
+        this.buttonUpdateOffState();
         this.guiUpdateInitState();
 
         // initialize the WDSim API
@@ -82,62 +85,59 @@ public class MessengerActivity extends AppCompatActivity implements PeerListList
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_PEERS_CHANGED_ACTION);
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_NETWORK_MEMBERSHIP_CHANGED_ACTION);
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_GROUP_OWNERSHIP_CHANGED_ACTION);
-        mReceiver = new WifiP2PBroadcastReceiver(this);
-        registerReceiver(mReceiver, filter);
+        this.mReceiver = new WifiP2PBroadcastReceiver(this);
+        registerReceiver(this.mReceiver, filter);
 
-        cAdapter = new CustomAdapter(this);
+        this.cAdapter = new CustomAdapter(this);
 
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-        userName = settings.getString("userName", "");
+        this.userName = settings.getString("userName", "");
     }
 
     @Override
-    public void onPause() {
+    protected void onPause() {
         super.onPause();
-        unregisterReceiver(mReceiver);
+        unregisterReceiver(this.mReceiver);
     }
 
-    private View.OnClickListener listenerWifiOnButton = new View.OnClickListener() {
-        public void onClick(View v) {
+    private Switch.OnCheckedChangeListener listenerWifiSwitch = new OnCheckedChangeListener() {
+        @Override
+        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
-            Intent intent = new Intent(getApplicationContext(), SimWifiP2pService.class);
-            bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+            if (isChecked) { // turn On
+                Intent intent = new Intent(getApplicationContext(), SimWifiP2pService.class);
+                bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 
-            findViewById(R.id.buttonWifiOn).setEnabled(false);
-            findViewById(R.id.buttonWifiOff).setEnabled(true);
-            findViewById(R.id.buttonSearch).setEnabled(true);
+                buttonUpdateOnState();
 
-            Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    mManager.requestPeers(mChannel, MessengerActivity.this);
+                Handler handler = new Handler();
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        mManager.requestPeers(mChannel, MessengerActivity.this);
+                        mManager.requestGroupInfo(mChannel, MessengerActivity.this);
+                    }
+                }, 3000);
+
+            } else { // turn Off
+                if (mBound) {
+                    unbindService(mConnection);
+                    mBound = false;
                 }
-            }, 3000);
-        }
-    };
-
-    private View.OnClickListener listenerWifiOffButton = new View.OnClickListener() {
-        public void onClick(View v) {
-            if (mBound) {
-                unbindService(mConnection);
-                mBound = false;
-
-                findViewById(R.id.buttonWifiOn).setEnabled(true);
-                findViewById(R.id.buttonWifiOff).setEnabled(false);
-                findViewById(R.id.buttonSearch).setEnabled(false);
+                buttonUpdateOffState();
                 lv.setAdapter(null);
             }
         }
     };
 
-    private View.OnClickListener listenerInRangeButton = new View.OnClickListener() {
+    private View.OnClickListener listenerSearchButton = new View.OnClickListener() {
         public void onClick(View v) {
             if (mBound) {
                 mManager.requestPeers(mChannel, MessengerActivity.this);
                 mManager.requestGroupInfo(mChannel, MessengerActivity.this);
             } else {
-                Toast.makeText(v.getContext(), "Service not bound", Toast.LENGTH_SHORT).show();
+                Toast.makeText(v.getContext(), "Service not bound",
+                        Toast.LENGTH_SHORT).show();
             }
         }
     };
@@ -145,13 +145,19 @@ public class MessengerActivity extends AppCompatActivity implements PeerListList
     private View.OnClickListener listenerSendButton = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
-            new SendCommTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
-                    mTextInput.getText().toString());
 
-            CharSequence text = "" + userName + ": " + mTextInput.getText().toString() + "\n";
-            mTextOutput.append(text);
+            if (!mTextInput.getText().toString().equals("")) {
+
+                String toSend = "" + userName + ": " + mTextInput.getText().toString();
+                new SendCommTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
+                        toSend);
+
+                CharSequence text = "" + userName + ": " + mTextInput.getText().toString() + "\n";
+                mTextOutput.append(text);
+            }
         }
     };
+
 
     private ServiceConnection mConnection = new ServiceConnection() {
         // callbacks for service binding, passed to bindService()
@@ -172,53 +178,10 @@ public class MessengerActivity extends AppCompatActivity implements PeerListList
         }
     };
 
-    public void updateGroupAvailable() {
-        if (mBound) {
-            System.err.println("=======================================================================> before UPDATING");
-            mManager.requestGroupInfo(mChannel, MessengerActivity.this);
-        } else {
-            Toast.makeText(getApplicationContext(), "Service not bound",
-                    Toast.LENGTH_SHORT).show();
-        }
-    }
 
-    @Override
-    public void onGroupInfoAvailable(SimWifiP2pDeviceList simWifiP2pDeviceList, SimWifiP2pInfo simWifiP2pInfo) {
-
-        // compile list of network members
-        for (String deviceName : simWifiP2pInfo.getDevicesInNetwork()) {
-            System.err.println("=======================================================================> UPDATING");
-            SimWifiP2pDevice device = simWifiP2pDeviceList.getByName(deviceName);
-            String devstr = "" + deviceName + " (" + device.getVirtIp() + ")";
-
-            peersIP.put(devstr, device.getVirtIp());
-
-            cAdapter.updatePeerImg(devstr, R.drawable.on_state);
-
-            /* ---------------------------------------------------------------------------> TODO
-            if (isMessenger) {
-                if (name.equals(devstr)) {
-
-                    // alert the user
-                    new AlertDialog.Builder(this)
-                            .setTitle("Error")
-                            .setMessage("User " + devstr + " left")
-                            .setNeutralButton("OK", new DialogInterface.OnClickListener() {
-                                public void onClick(DialogInterface dialog, int which) {
-                                }
-                            })
-                            .show();
-                }
-
-            }*/
-        }
-
-        lv.setAdapter(cAdapter);
-    }
-
-    public void updatePeersAvailable() {
-        if (mBound) {
-            mManager.requestPeers(mChannel, MessengerActivity.this);
+    protected void updatePeersAvailable() {
+        if (this.mBound) {
+            this.mManager.requestPeers(this.mChannel, MessengerActivity.this);
         } else {
             Toast.makeText(getApplicationContext(), "Service not bound",
                     Toast.LENGTH_SHORT).show();
@@ -235,12 +198,55 @@ public class MessengerActivity extends AppCompatActivity implements PeerListList
             String devstr = "" + device.deviceName + " (" + device.getVirtIp() + ")";
             peersStr[i] = devstr;
 
-            peersIP.put(devstr, device.getVirtIp());
+            this.peersIP.put(devstr, device.getVirtIp());
 
             i++;
         }
-        cAdapter.setPeersList(peersStr);
-        lv.setAdapter(cAdapter);
+        this.cAdapter.setPeersList(peersStr); // cAdapter updates list
+        this.lv.setAdapter(this.cAdapter);
+    }
+
+    protected void updateGroupAvailable() {
+        if (this.mBound) {
+            this.mManager.requestPeers(this.mChannel, MessengerActivity.this);
+            this.mManager.requestGroupInfo(this.mChannel, MessengerActivity.this);
+        } else {
+            Toast.makeText(getApplicationContext(), "Service not bound",
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onGroupInfoAvailable(SimWifiP2pDeviceList simWifiP2pDeviceList, SimWifiP2pInfo simWifiP2pInfo) {
+
+        // compile list of network members
+        for (String deviceName : simWifiP2pInfo.getDevicesInNetwork()) {
+
+            SimWifiP2pDevice device = simWifiP2pDeviceList.getByName(deviceName);
+            String devstr = "" + deviceName + " (" + device.getVirtIp() + ")";
+
+            this.peersIP.put(devstr, device.getVirtIp());
+
+            this.cAdapter.updatePeerImg(devstr, R.drawable.on_state);
+        }
+
+        this.lv.setAdapter(this.cAdapter);
+    }
+
+
+    private void showError() {
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setTitle("Error");
+        alertDialogBuilder.setMessage("Connection to " + this.name + " LOST!");
+
+        alertDialogBuilder.setNeutralButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface arg0, int arg1) {
+                // User clicked OK
+            }
+        });
+
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
     }
 
 
@@ -249,21 +255,23 @@ public class MessengerActivity extends AppCompatActivity implements PeerListList
 
         this.name = name;
 
-        // spawn the chat server background task
-        iCommTask = new IncommingCommTask();
-        iCommTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        if (!this.isServerRunning) {
+            // spawn the chat server background task
+            this.iCommTask = new IncommingCommTask();
+            this.iCommTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            this.isServerRunning = true;
+        }
 
-        oCommTask = new OutgoingCommTask();
-        oCommTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, peersIP.get(name));
+        new OutgoingCommTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, this.peersIP.get(name));
 
         findViewById(R.id.buttonSend).setOnClickListener(listenerSendButton);
-        mTextInput = (TextView) findViewById(R.id.editTextToSend);
-        mTextOutput = (EditText) findViewById(R.id.listViewMessenger);
+        this.mTextInput = (TextView) findViewById(R.id.editTextToSend);
+        this.mTextOutput = (EditText) findViewById(R.id.listViewMessenger);
 
-        isMessenger = true;
+        this.isMessenger = true;
     }
 
-    public class OutgoingCommTask extends AsyncTask<String, Void, String> {
+    private class OutgoingCommTask extends AsyncTask<String, Void, String> {
         @Override
         protected String doInBackground(String... params) {
             try {
@@ -273,7 +281,7 @@ public class MessengerActivity extends AppCompatActivity implements PeerListList
             } catch (IOException e) {
                 return "IO error:" + e.getMessage();
             }
-            return null;
+            return "OK";
         }
 
         @Override
@@ -282,62 +290,78 @@ public class MessengerActivity extends AppCompatActivity implements PeerListList
         }
     }
 
-    public class IncommingCommTask extends AsyncTask<Void, String, Void> {
+    private class IncommingCommTask extends AsyncTask<Void, String, Void> {
         @Override
         protected Void doInBackground(Void... params) {
+            int count = 0;
+
             try {
                 mSrvSocket = new SimWifiP2pSocketServer(Integer.parseInt(getString(R.string.port)));
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
+            SimWifiP2pSocket sock = null;
+            try {
+                sock = mSrvSocket.accept();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
             while (!Thread.currentThread().isInterrupted()) {
-
-                if (!isMessenger)
-                    break;
-
                 try {
-                    SimWifiP2pSocket sock = mSrvSocket.accept();
+                    BufferedReader sockIn = new BufferedReader(new InputStreamReader(sock.getInputStream()));
+                    String st = sockIn.readLine();
+                    if (st == null) {
 
-                    try {
-                        BufferedReader sockIn = new BufferedReader(new InputStreamReader(sock.getInputStream()));
-                        String st = sockIn.readLine();
-                        publishProgress(st);
-                        sock.getOutputStream().write(("\n").getBytes());
-                    } catch (IOException e) {
-                        Log.d("Error reading socket:", e.getMessage());
-                    } finally {
-                        sock.close();
+                        if (count == 1) { // two times two => cancel
+                            publishProgress(null);
+                            break;
+                        }
+                        count++;
                     }
+                    publishProgress(st);
+                    sock.getOutputStream().write(("\n").getBytes());
 
                 } catch (IOException e) {
-                    Log.d("Error socket:", e.getMessage());
-                    break;
+                    //Log.d("Error reading socket:", e.getMessage());
+                    publishProgress(null);
                 }
             }
+
+            try {
+                sock.close();
+                sock = null;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
             return null;
         }
 
         @Override
         protected void onProgressUpdate(String... values) {
-            mTextOutput.append(values[0] + "\n");
+            if (values != null)
+                mTextOutput.append(values[0] + "\n");
+            else
+                showError();
         }
     }
 
-    public class SendCommTask extends AsyncTask<String, String, Void> {
-
+    private class SendCommTask extends AsyncTask<String, String, Void> {
         @Override
         protected Void doInBackground(String... msg) {
             try {
                 mCliSocket.getOutputStream().write((msg[0] + "\n").getBytes());
                 BufferedReader sockIn = new BufferedReader(new InputStreamReader(mCliSocket.getInputStream()));
                 sockIn.readLine();
-                mCliSocket.close();
+                //mCliSocket.close();
 
             } catch (IOException e) {
-                e.printStackTrace();
+                //e.printStackTrace();
+                publishProgress(null);
             }
-
             return null;
         }
 
@@ -345,22 +369,31 @@ public class MessengerActivity extends AppCompatActivity implements PeerListList
         protected void onPostExecute(Void result) {
             mTextInput.setText("");
         }
+
+        @Override
+        protected void onProgressUpdate(String... values) {
+            if (values == null)
+                showError();
+        }
     }
 
-    public void guiUpdateInitState() {
+    private void guiUpdateInitState() {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        findViewById(R.id.buttonWifiOn).setOnClickListener(listenerWifiOnButton);
-        findViewById(R.id.buttonWifiOff).setOnClickListener(listenerWifiOffButton);
-        findViewById(R.id.buttonSearch).setOnClickListener(listenerInRangeButton);
+        ((Switch) findViewById(R.id.switchWifi)).setOnCheckedChangeListener(listenerWifiSwitch);
+        findViewById(R.id.buttonSearch).setOnClickListener(listenerSearchButton);
 
-        lv = (ListView) findViewById(R.id.listView);
+        this.lv = (ListView) findViewById(R.id.listView);
     }
 
-    public void buttonUpdateInitState() {
-        findViewById(R.id.buttonWifiOn).setEnabled(true);
-        findViewById(R.id.buttonWifiOff).setEnabled(false);
+    private void buttonUpdateOnState() {
+        ((Switch) findViewById(R.id.switchWifi)).setChecked(true);
+        findViewById(R.id.buttonSearch).setEnabled(true);
+    }
+
+    private void buttonUpdateOffState() {
+        ((Switch) findViewById(R.id.switchWifi)).setChecked(false);
         findViewById(R.id.buttonSearch).setEnabled(false);
     }
 
@@ -368,36 +401,41 @@ public class MessengerActivity extends AppCompatActivity implements PeerListList
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
             onBackPressed();
-            return true;
+            return false;
         }
         return super.onKeyDown(keyCode, event);
     }
 
+    @Override
     public void onBackPressed() {
-        if (isMessenger) {
-            if (mCliSocket != null) {
+        if (this.isMessenger) {
+            if (this.mCliSocket != null) {
                 try {
-                    mCliSocket.close();
+                    this.mCliSocket.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
-            mCliSocket = null;
-
-            iCommTask = null;
-            oCommTask = null;
+            this.mCliSocket = null;
 
             setContentView(R.layout.activity_list_messenger);
+            this.buttonUpdateOnState();
             this.guiUpdateInitState();
-            findViewById(R.id.buttonWifiOn).setEnabled(false);
-            findViewById(R.id.buttonWifiOff).setEnabled(true);
-            findViewById(R.id.buttonSearch).setEnabled(true);
-            lv.setAdapter(cAdapter);
 
-            isMessenger = false;
+            this.mManager.requestPeers(this.mChannel, MessengerActivity.this);
+            this.mManager.requestGroupInfo(this.mChannel, MessengerActivity.this);
+
+            this.isMessenger = false;
+
         } else {
-            if (mBound)
-                unbindService(mConnection);
+            if (this.isServerRunning) {
+                this.iCommTask.cancel(true);
+                this.iCommTask = null;
+            }
+
+            if (this.mBound) {
+                unbindService(this.mConnection);
+            }
 
             super.onBackPressed();
         }

@@ -39,6 +39,10 @@
     <string name="pick_tag">Bike pick up</string>
     <string name="drop_tag">Bike drop off</string>
 
+    <string name="search_tag">Update</string>
+    <string name="turn_wifi_tag">Turn Wifi</string>
+
+
     <string name="title_activity_trajectory_map">Map</string>
     <string name="title_activity_stations_map">Map</string>
 
@@ -55,5 +59,7 @@
         <item name="android:shadowDy">1</item>
         <item name="android:shadowRadius">2</item>
     </style>
+
+    <string name="port">10001</string>
 
 </resources>

@@ -58,17 +58,17 @@ public class WifiP2PBroadcastReceiver extends BroadcastReceiver {
 
             mActivity.updateGroupAvailable();
 
-        } else if (SimWifiP2pBroadcast.WIFI_P2P_GROUP_OWNERSHIP_CHANGED_ACTION.equals(action)) {
-
-            /*
+        }
+        /* NOT REALLY NEEDED, but useful for know who's GO and who's client
+         -------------------------------------------------------------------------
+        else if (SimWifiP2pBroadcast.WIFI_P2P_GROUP_OWNERSHIP_CHANGED_ACTION.equals(action)) {
             SimWifiP2pInfo ginfo = (SimWifiP2pInfo) intent.getSerializableExtra(
                     SimWifiP2pBroadcast.EXTRA_GROUP_INFO);
             ginfo.print();
-            */
             Toast.makeText(mActivity, "Group ownership changed",
                     Toast.LENGTH_SHORT).show();
+            mActivity.updateGroupAvailable();
+        }*/
 
-             // mActivity.updateGroupAvailable();
-        }
     }
 }
