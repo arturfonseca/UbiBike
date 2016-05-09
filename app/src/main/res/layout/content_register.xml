@@ -29,7 +29,8 @@
         android:inputType="textPersonName"
         android:ems="10"
         android:id="@+id/editTextUsername"
-        android:layout_below="@+id/textView" />
+        android:layout_below="@+id/textView"
+        android:textSize="25sp" />
 
     <TextView
         android:layout_width="wrap_content"
@@ -50,7 +51,8 @@
         android:inputType="textPassword"
         android:ems="10"
         android:id="@+id/editTextPassword"
-        android:layout_below="@+id/textView2" />
+        android:layout_below="@+id/textView2"
+        android:textSize="25sp"/>
 
     <TextView
         android:layout_width="wrap_content"
@@ -72,7 +74,8 @@
         android:ems="10"
         android:id="@+id/editTextRetypePassword"
         android:layout_below="@+id/textView3"
-        android:layout_marginBottom="50dp"/>
+        android:layout_marginBottom="30dp"
+        android:textSize="25sp" />
 
     <Button
         android:layout_width="fill_parent"

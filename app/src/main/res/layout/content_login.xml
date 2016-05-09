@@ -17,9 +17,11 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="@string/user_tag"
+        android:textStyle="bold"
         android:id="@+id/textView1"
         android:layout_alignParentLeft="true"
-        android:layout_marginTop="45dp" />
+        android:layout_marginTop="50dp"
+        android:textSize="25sp" />
 
     <EditText
         android:layout_width="fill_parent"
@@ -35,10 +37,12 @@
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
         android:text="@string/pass_tag"
+        android:textStyle="bold"
         android:id="@+id/textView2"
         android:layout_below="@+id/ExtractUsername"
         android:layout_alignParentLeft="true"
-        android:layout_marginTop="20dp" />
+        android:layout_marginTop="30dp"
+        android:textSize="25sp" />
 
     <EditText
         android:layout_width="fill_parent"
