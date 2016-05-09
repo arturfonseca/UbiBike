@@ -1,7 +1,14 @@
 package pt.ulisboa.tecnico.cmov.ubibike;
 
+import android.app.Activity;
+import android.content.DialogInterface;
+import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
+import android.util.Log;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -10,14 +17,22 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Hashtable;
 
-public class StationsMap extends FragmentActivity implements OnMapReadyCallback {
+import pt.ulisboa.tecnico.cmov.ubibike.domain.HtmlConnections;
+
+public class StationsMap extends FragmentActivity implements OnMapReadyCallback, GoogleMap.OnMarkerClickListener {
 
     private GoogleMap mMap;
     private LatLngBounds bounds;
+    private Activity thisActivity = this;
+    private HashMap<String,String> stations;
+    public static final String PREFS_NAME = "UserAccount";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,10 +47,11 @@ public class StationsMap extends FragmentActivity implements OnMapReadyCallback 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
-        ArrayList<String> stations = getIntent().getStringArrayListExtra("stations");
         mMap.clear();
+        stations = (HashMap<String,String>) getIntent().getSerializableExtra("stations");
+        mMap.setOnMarkerClickListener(this);
         LatLngBounds.Builder builder = new LatLngBounds.Builder();
-        for(String s: stations){
+        for(String s: stations.keySet()){
             double latitude = Double.parseDouble(s.split(",")[0]);
             double longitude = Double.parseDouble(s.split(",")[1]);
             LatLng position = new LatLng(latitude,longitude);
@@ -47,9 +63,45 @@ public class StationsMap extends FragmentActivity implements OnMapReadyCallback 
             @Override
             public void onMapLoaded() {
                 CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds,50);
-                mMap.moveCamera(cu);
+                mMap.animateCamera(cu);
             }
         });
 
+    }
+
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+        String coordinates = marker.getPosition().latitude + "," + marker.getPosition().longitude;
+        final String station = stations.get(coordinates);
+        Log.d("Stations",station);
+        AlertDialog.Builder builder = new AlertDialog.Builder(thisActivity);
+        builder.setMessage("Do you wish to book a bike at " + station + "?")
+                .setPositiveButton("Yes",new DialogInterface.OnClickListener(){
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+                        String userName = settings.getString("userName", "");
+                        new GetResult().execute("book:" + userName + "," + station);
+                    }
+                })
+                .setNegativeButton("No",new DialogInterface.OnClickListener(){
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                    }
+                });
+        builder.create().show();
+        return true;
+    }
+
+    private class GetResult extends AsyncTask<String, String, String> {
+
+        protected String doInBackground(String... url) {
+            return HtmlConnections.getResponse(url[0]);
+        }
+
+        protected void onPostExecute(String result) {
+            if(!result.equals("error")){}
+                Toast.makeText(thisActivity,"Bike Booked",Toast.LENGTH_LONG).show();
+        }
     }
 }
