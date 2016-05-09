@@ -9,9 +9,9 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="pt.ulisboa.tecnico.cmov.ubibike.MessengerActivity"
-    tools:showIn="@layout/activity_list_messenger"
+    tools:showIn="@layout/activity_list_items"
     android:background="@drawable/back2" >
+    <!-- tools:context="pt.ulisboa.tecnico.cmov.ubibike.MessengerActivity" -->
 
     <Switch
         android:layout_width="wrap_content"

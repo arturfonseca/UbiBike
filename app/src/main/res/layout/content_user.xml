@@ -13,25 +13,6 @@
     tools:showIn="@layout/activity_user"
     android:background="@drawable/back2" >
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="@string/user_tag"
-        android:id="@+id/textView"
-        android:layout_alignParentLeft="true"
-        android:layout_marginTop="20dp" />
-
-    <EditText
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:inputType="textPersonName"
-        android:id="@+id/extractUsername"
-        android:ems="10"
-        android:textSize="20sp"
-        android:layout_below="@+id/textView"
-        android:layout_marginBottom="25dp" />
-
     <Button
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"

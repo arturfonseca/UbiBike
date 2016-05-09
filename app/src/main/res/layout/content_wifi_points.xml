@@ -10,6 +10,57 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="pt.ulisboa.tecnico.cmov.ubibike.WifiPointsActivity"
-    tools:showIn="@layout/activity_wifi_points">
+    tools:showIn="@layout/activity_wifi_points"
+    android:background="@drawable/back2" >
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="MY POINTS HERE"
+        android:id="@+id/textViewShowPoints"
+        android:textSize="25sp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="@string/points_tag"
+        android:id="@+id/textView2"
+        android:textSize="25sp"
+        android:layout_marginTop="38dp"
+        android:layout_below="@+id/textViewShowPoints"
+        android:layout_alignParentLeft="true" />
+
+    <EditText
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/extractPoints"
+        android:textSize="20sp"
+        android:layout_below="@+id/textView2"
+        android:layout_alignParentLeft="true"
+        android:layout_marginBottom="20dp" />
+
+    <Button
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/send_tag"
+        android:id="@+id/buttonSendPoints"
+        style="@style/ButtonText"
+        android:background="@drawable/btn_black"
+        android:layout_below="@+id/extractPoints"
+        android:layout_centerHorizontal="true" >
+    </Button>
+
+    <Button
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/collect_tag"
+        android:id="@+id/buttonCollectPoints"
+        style="@style/ButtonText"
+        android:background="@drawable/btn_black"
+        android:layout_below="@+id/buttonSendPoints"
+        android:layout_centerHorizontal="true" >
+    </Button>
 
 </RelativeLayout>

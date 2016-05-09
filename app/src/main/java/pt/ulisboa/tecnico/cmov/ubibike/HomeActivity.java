@@ -21,6 +21,7 @@ public class HomeActivity extends AppCompatActivity {
         */
 
         Button b1 = (Button) findViewById(R.id.buttonUserMenu);
+        assert b1 != null;
         b1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -29,6 +30,7 @@ public class HomeActivity extends AppCompatActivity {
         });
 
         Button b2 = (Button) findViewById(R.id.buttonPointsMenu);
+        assert b2 != null;
         b2.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -37,6 +39,7 @@ public class HomeActivity extends AppCompatActivity {
         });
 
         Button b3 = (Button) findViewById(R.id.buttonBookMenu);
+        assert b3 != null;
         b3.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -45,10 +48,20 @@ public class HomeActivity extends AppCompatActivity {
         });
 
         Button b4 = (Button) findViewById(R.id.buttonMessenger);
+        assert b4 != null;
         b4.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 startActivity(new Intent(HomeActivity.this, MessengerActivity.class));
+            }
+        });
+
+        Button b5 = (Button) findViewById(R.id.buttonWifiPoints);
+        assert b5 != null;
+        b5.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(HomeActivity.this, WifiPointsActivity.class));
             }
         });
     }

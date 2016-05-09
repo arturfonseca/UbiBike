@@ -2,7 +2,7 @@
     <string name="app_name">UbiBike</string>
 
     <string name="action_settings">Settings</string>
-    <string name="title_activity_home">UbiBike Menu</string>
+    <string name="title_activity_home">UbiBike</string>
     <string name="title_activity_messenger">Messenger</string>
     <string name="title_activity_points">Points</string>
     <string name="title_activity_user">User Menu</string>
@@ -16,10 +16,9 @@
     <string name="points_label">Points Menu</string>
     <string name="user_label">User Menu</string>
     <string name="booking_label">Booking Menu</string>
-    <string name="points_now_label">Wifi Points Menu</string>
+    <string name="points_now_label">Wifi Points</string>
 
     <string name="register_tag">Register</string>
-    <string name="register_user_tag">Register user</string>
 
     <string name="user_tag">Username: </string>
     <string name="pass_tag">Password: </string>
@@ -29,7 +28,7 @@
     <string name="send_tag">Send</string>
     <string name="collect_tag">Collect Points</string>
 
-    <string name="show_user_tag">Show user information</string>
+    <string name="show_user_tag">Show information</string>
     <string name="send_traj_tag">Send trajectory</string>
     <string name="recent_tag">Recent trajectories</string>
     <string name="past_tag">Past trajectories</string>
@@ -60,6 +59,7 @@
         <item name="android:shadowRadius">2</item>
     </style>
 
-    <string name="port">10001</string>
+    <string name="msg_port">10001</string>
+    <string name="points_port">10001</string>
 
 </resources>

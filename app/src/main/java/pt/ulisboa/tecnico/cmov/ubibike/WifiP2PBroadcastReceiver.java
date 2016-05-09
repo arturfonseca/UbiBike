@@ -6,15 +6,24 @@ import pt.inesc.termite.wifidirect.SimWifiP2pInfo;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.widget.Toast;
+
+import java.lang.reflect.Method;
 
 public class WifiP2PBroadcastReceiver extends BroadcastReceiver {
 
-    private MessengerActivity mActivity;
+    private final String TAG = "WifiP2PBroadcastReceive";
 
-    public WifiP2PBroadcastReceiver(MessengerActivity activity) {
+    private final Context mActivity;
+    private final boolean isMessengerActivity;
+    private final boolean isWifiPointsActivity;
+
+    public WifiP2PBroadcastReceiver(Context activity) {
         super();
         this.mActivity = activity;
+        isMessengerActivity = (activity instanceof MessengerActivity);
+        isWifiPointsActivity = (activity instanceof WifiPointsActivity);
     }
 
     @Override
@@ -44,7 +53,14 @@ public class WifiP2PBroadcastReceiver extends BroadcastReceiver {
             Toast.makeText(mActivity, "Peer list changed",
                     Toast.LENGTH_SHORT).show();
 
-            mActivity.updatePeersAvailable();
+            // very bad approach
+            if (isMessengerActivity) {
+                ((MessengerActivity) mActivity).updatePeersAvailable();
+            } else if (isWifiPointsActivity) {
+                ((WifiPointsActivity) mActivity).updatePeersAvailable();
+            } else {
+                Log.d(TAG, "ERROR P2P_PEERS_CHANGED getting class");
+            }
 
         } else if (SimWifiP2pBroadcast.WIFI_P2P_NETWORK_MEMBERSHIP_CHANGED_ACTION.equals(action)) {
 
@@ -56,7 +72,14 @@ public class WifiP2PBroadcastReceiver extends BroadcastReceiver {
             Toast.makeText(mActivity, "Network membership changed",
                     Toast.LENGTH_SHORT).show();
 
-            mActivity.updateGroupAvailable();
+            // very bad approach
+            if (isMessengerActivity) {
+                ((MessengerActivity) mActivity).updateGroupAvailable();
+            } else if (isWifiPointsActivity) {
+                ((WifiPointsActivity) mActivity).updateGroupAvailable();
+            } else {
+                Log.d(TAG, "ERROR P2P_NETWORK_MEMBERSHIP_CHANGED getting class");
+            }
 
         }
         /* NOT REALLY NEEDED, but useful for know who's GO and who's client
@@ -71,4 +94,5 @@ public class WifiP2PBroadcastReceiver extends BroadcastReceiver {
         }*/
 
     }
+
 }

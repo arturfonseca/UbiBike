@@ -3,6 +3,7 @@ package pt.ulisboa.tecnico.cmov.ubibike;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,13 +17,19 @@ import java.util.LinkedHashMap;
 
 public class CustomAdapter extends BaseAdapter {
 
-    private LinkedHashMap<String, Integer> peersList = new LinkedHashMap<>();
-    private MessengerActivity mActivity;
-    private LayoutInflater inflater;
+    private final String TAG = "CustomAdapter";
 
-    public CustomAdapter(MessengerActivity listMessengerActivity) {
-        mActivity = listMessengerActivity;
+    private LinkedHashMap<String, Integer> peersList = new LinkedHashMap<>();
+    private final Context mActivity;
+    private final LayoutInflater inflater;
+    private final boolean isMessengerActivity;
+    private final boolean isWifiPointsActivity;
+
+    public CustomAdapter(Context listActivity) {
+        mActivity = listActivity;
         inflater = (LayoutInflater) mActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        isMessengerActivity = (listActivity instanceof MessengerActivity);
+        isWifiPointsActivity = (listActivity instanceof WifiPointsActivity);
     }
 
     @Override
@@ -43,7 +50,7 @@ public class CustomAdapter extends BaseAdapter {
     }
 
     public void setPeersList(String[] name) {
-        if(!peersList.isEmpty())
+        if (!peersList.isEmpty())
             peersList.clear();
 
         for (String temp : name) {
@@ -65,9 +72,10 @@ public class CustomAdapter extends BaseAdapter {
 
         Holder holder = new Holder();
         View rowView;
-        rowView = inflater.inflate(R.layout.list_messenger, null);
+        rowView = inflater.inflate(R.layout.list_item, null);
 
         holder.tv = (TextView) rowView.findViewById(R.id.textView1);
+
         final String name = (new ArrayList<>(peersList.keySet())).get(position);
         holder.tv.setText(name);
 
@@ -77,13 +85,20 @@ public class CustomAdapter extends BaseAdapter {
         rowView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String name = (new ArrayList<>(peersList.keySet())).get(position);
 
                 if (peersList.get(name) == R.drawable.on_state) {
-                    Toast.makeText(mActivity, "You Clicked " + name, Toast.LENGTH_LONG).show();
-                    mActivity.connectTo((new ArrayList<>(peersList.keySet())).get(position));
-                }
-                else {
+                    Toast.makeText(mActivity, "Clicked " + name, Toast.LENGTH_LONG).show();
+
+                    // very bad approach
+                    if (isMessengerActivity) {
+                        ((MessengerActivity) mActivity).connectTo(name);
+                    } else if (isWifiPointsActivity) {
+                        ((WifiPointsActivity) mActivity).connectTo(name);
+                    } else {
+                        Log.d(TAG, "ERROR Clicked_" + name+ " getting class");
+                    }
+
+                } else {
                     // alert the user
                     new AlertDialog.Builder(mActivity)
                             .setTitle("Error")
