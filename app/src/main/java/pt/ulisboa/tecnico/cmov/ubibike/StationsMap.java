@@ -33,6 +33,8 @@ public class StationsMap extends FragmentActivity implements OnMapReadyCallback,
     private Activity thisActivity = this;
     private HashMap<String,String> stations;
     public static final String PREFS_NAME = "UserAccount";
+    public static final String PREF_STATION = "Station";
+    private String currentStation;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,25 +73,29 @@ public class StationsMap extends FragmentActivity implements OnMapReadyCallback,
 
     @Override
     public boolean onMarkerClick(Marker marker) {
-        String coordinates = marker.getPosition().latitude + "," + marker.getPosition().longitude;
-        final String station = stations.get(coordinates);
-        Log.d("Stations",station);
-        AlertDialog.Builder builder = new AlertDialog.Builder(thisActivity);
-        builder.setMessage("Do you wish to book a bike at " + station + "?")
-                .setPositiveButton("Yes",new DialogInterface.OnClickListener(){
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-                        String userName = settings.getString("userName", "");
-                        new GetResult().execute("book:" + userName + "," + station);
-                    }
-                })
-                .setNegativeButton("No",new DialogInterface.OnClickListener(){
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                    }
-                });
-        builder.create().show();
+        SharedPreferences station = getSharedPreferences(PREF_STATION,0);
+        if(station.getString("station","null").equals("null")){
+            String coordinates = marker.getPosition().latitude + "," + marker.getPosition().longitude;
+            currentStation = stations.get(coordinates);
+            AlertDialog.Builder builder = new AlertDialog.Builder(thisActivity);
+            builder.setMessage("Do you wish to book a bike at " + currentStation + "?")
+                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+                            String userName = settings.getString("userName", "");
+                            new GetResult().execute("book:" + userName + "," + currentStation);
+                        }
+                    })
+                    .setNegativeButton("No", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                        }
+                    });
+            builder.create().show();
+        }else{
+            Toast.makeText(thisActivity,"You already have a bike booked at "+station.getString("station","null"), Toast.LENGTH_LONG).show();
+        }
         return true;
     }
 
@@ -102,6 +108,10 @@ public class StationsMap extends FragmentActivity implements OnMapReadyCallback,
         protected void onPostExecute(String result) {
             if(!result.equals("error")){}
                 Toast.makeText(thisActivity,"Bike Booked",Toast.LENGTH_LONG).show();
+                SharedPreferences settings = getSharedPreferences(PREF_STATION,0);
+                SharedPreferences.Editor editor = settings.edit();
+                editor.putString("station", currentStation);
+                editor.apply();
         }
     }
 }

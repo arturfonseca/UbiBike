@@ -86,8 +86,6 @@ public class HomeActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
             }
-            Log.d("Stations",result);
-            Log.d("Stations", Arrays.toString(stations.values().toArray()));
             Intent i = new Intent(HomeActivity.this, StationsMap.class);
             i.putExtra("stations",stations);
             startActivity(i);
