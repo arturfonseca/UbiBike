@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 
 import pt.ulisboa.tecnico.cmov.ubibike.domain.HtmlConnections;
+import pt.ulisboa.tecnico.cmov.ubibike.domain.StationDetectorService;
 
 public class HomeActivity extends AppCompatActivity {
 
@@ -103,5 +104,15 @@ public class HomeActivity extends AppCompatActivity {
             startActivity(i);
         }
     }
+    // Start the service
+    public void startService(View view) {
+        startService(new Intent(this, StationDetectorService.class));
+    }
+
+    // Stop the service
+    public void stopService(View view) {
+        stopService(new Intent(this, StationDetectorService.class));
+    }
+
 
 }

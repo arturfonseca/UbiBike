@@ -22,6 +22,7 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
@@ -42,6 +43,7 @@ import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 import pt.inesc.termite.wifidirect.SimWifiP2pDeviceList;
 import pt.inesc.termite.wifidirect.SimWifiP2pManager.PeerListListener;
 import pt.inesc.termite.wifidirect.SimWifiP2pManager.GroupInfoListener;
+import pt.ulisboa.tecnico.cmov.ubibike.domain.HtmlConnections;
 
 public class WifiPointsActivity extends AppCompatActivity implements PeerListListener, GroupInfoListener {
 
@@ -74,6 +76,7 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+
         setContentView(R.layout.activity_list_items);
         this.buttonUpdateOffState();
         this.guiUpdateInitState();
@@ -94,6 +97,7 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
 
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         this.userName = settings.getString("userName", "");
+
     }
 
     @Override
@@ -101,12 +105,19 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
         super.onPause();
         unregisterReceiver(mReceiver);
     }
+  private void updatePoints(){
+
+      System.out.println("aaa");
+      TextView t= (TextView)findViewById(R.id.textViewShowPoints);
+     t.setText("aaaaaaaaaaaaaaaaaaaaaaaa");
+  }
 
 
     //- BUTTON CALLBACK -----------------------------------------------------------------------------
     private Switch.OnCheckedChangeListener listenerWifiSwitch = new CompoundButton.OnCheckedChangeListener() {
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+
 
             if (isChecked) { // turn On
                 Intent intent = new Intent(WifiPointsActivity.this, SimWifiP2pService.class);
@@ -153,6 +164,8 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
     private View.OnClickListener listenerSendButton = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            Toast.makeText(v.getContext(), "WiFi Direct disabled",
+                    Toast.LENGTH_SHORT).show();
 
             if (!mTextInput.getText().toString().equals("")) {
 
@@ -276,11 +289,10 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
         setContentView(R.layout.activity_wifi_points);
         setSupportActionBar(((Toolbar) findViewById(R.id.toolbar)));
 
-        /* GET MY CURRENT POINTS AND SHOW */
-
         this.name = name;
 
         new OutgoingCommTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, this.peersIP.get(name));
+        new GetResult().execute("getpoints:a");
 
         findViewById(R.id.buttonSendPoints).setOnClickListener(listenerSendButton);
         findViewById(R.id.buttonCollectPoints).setOnClickListener(listenerReceiveButton);
@@ -341,6 +353,7 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
                         Toast.LENGTH_SHORT).show();
 
             /* UPDATE SERVER THAT WE RECEIVED POINTS --------- */
+                new GetResult().execute("incpoints:"+userName+","+values[0]);
 
             } else {
                 if (isSendMenu)
@@ -395,6 +408,7 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
             mTextInput.setText("");
 
             /* UPDATE SERVER THAT WE SENT POINTS --------- */
+            new GetResult().execute("decpoints:"+userName+","+result);
 
             Toast.makeText(getApplicationContext(), "Sent " + result + " points",
                     Toast.LENGTH_SHORT).show();
@@ -467,4 +481,26 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
         }
 
     }
+    private class GetResult extends AsyncTask<String, Void, String> {
+        String output;
+
+        protected String doInBackground(String... url) {
+            output = HtmlConnections.getResponse(url[0]);
+            System.out.println(output);
+            return null;
+        }
+
+        protected void onPostExecute(String result) {
+            if (!output.equals("ERROR")) {
+                System.out.println(output);
+                TextView t= (TextView)findViewById(R.id.textViewShowPoints);
+                t.setText(output);
+
+            }
+            else
+                showError(); // warn user
+
+        }
+    }
+
 }
