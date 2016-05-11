@@ -79,8 +79,8 @@ public class PickDropActivity extends AppCompatActivity implements PeerListListe
     private IncommingCommTask iCommTask = null;
 
     private boolean riding = false;
-    boolean inside=false;
-    String insideStation="";
+    boolean inside = false;
+    String insideStation = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -246,10 +246,10 @@ public class PickDropActivity extends AppCompatActivity implements PeerListListe
     public void onPeersAvailable(SimWifiP2pDeviceList simWifiP2pDeviceList) {
         String[] peersStr = new String[simWifiP2pDeviceList.getDeviceList().size()];
         int i = 0;
-       // ArrayList<String> bikes = new ArrayList<String>();
+        // ArrayList<String> bikes = new ArrayList<String>();
         //ArrayList<String> stations = new ArrayList<String>();
-        String station="";
-        String bike="";
+        String station = "";
+        String bike = "";
         // compile list of devices in range
         for (SimWifiP2pDevice device : simWifiP2pDeviceList.getDeviceList()) {
             String devstr = "" + device.deviceName + " (" + device.getVirtIp() + ")";
@@ -258,66 +258,63 @@ public class PickDropActivity extends AppCompatActivity implements PeerListListe
             i++;
 
             if (device.deviceName.startsWith("station_")) {
-                station=device.deviceName;
+                station = device.deviceName;
             } else if (device.deviceName.startsWith("bike_")) {
-                bike=device.deviceName;
+                bike = device.deviceName;
 
             }
 
         }
-        pickupEvent(station,bike);
-        dropoffEvent(station,bike);
+        pickupEvent(station, bike);
+        dropoffEvent(station, bike);
         this.cAdapter.setPeersList(peersStr); // cAdapter updates list
         this.lv.setAdapter(this.cAdapter);
 
     }
-    private void dropoffEvent( String station,String bike) {
-        if(!riding)
+
+    private void dropoffEvent(String station, String bike) {
+        if (!riding)
             return;
-        try{
-            if (!station.equals("")&&!bike.equals("")){
-                System.out.println(1+station+bike);
-                inside =true;
-                insideStation=station;
-            }
-            else if (station.equals("")&&bike.equals("")&&inside){
-                    String result = new GetResult().execute("dropoff:" + userName + "," + insideStation).get();
-                    Toast.makeText(getApplicationContext(), "Drop on "+insideStation, Toast.LENGTH_SHORT).show();
-                    inside=false;
+        try {
+            if (!station.equals("") && !bike.equals("")) {
+                System.out.println(1 + station + bike);
+                inside = true;
+                insideStation = station;
+            } else if (station.equals("") && bike.equals("") && inside) {
+                String result = new GetResult().execute("dropoff:" + userName + "," + insideStation).get();
+                Toast.makeText(getApplicationContext(), "Drop on " + insideStation, Toast.LENGTH_SHORT).show();
+                inside = false;
 
 
             }
-        }
-        catch (Exception e){
+        } catch (Exception e) {
 
         }
 
     }
 
 
-    private void pickupEvent( String station,String bike) {
-        if(riding)
+    private void pickupEvent(String station, String bike) {
+        if (riding)
             return;
-        try{
-            if (!station.equals("")&&!bike.equals("")){
-                System.out.println(1+station+bike);
-                inside =true;
-                insideStation=station;
-            }
-           else if (station.equals("")&&!bike.equals("")&&inside){
-                System.out.println(2+station+bike);
+        try {
+            if (!station.equals("") && !bike.equals("")) {
+                System.out.println(1 + station + bike);
+                inside = true;
+                insideStation = station;
+            } else if (station.equals("") && !bike.equals("") && inside) {
+                System.out.println(2 + station + bike);
                 String booked = new GetResult().execute("booked:" + userName + "," + insideStation).get();
-                if (booked.equals("OK")){
-                    System.out.println(3+station+bike);
+                if (booked.equals("OK")) {
+                    System.out.println(3 + station + bike);
                     String result = new GetResult().execute("pickup:" + userName + "," + insideStation).get();
-                    Toast.makeText(getApplicationContext(), "Pickup on "+insideStation, Toast.LENGTH_SHORT).show();
-                    inside=false;
-                    riding=true;
+                    Toast.makeText(getApplicationContext(), "Pickup on " + insideStation, Toast.LENGTH_SHORT).show();
+                    inside = false;
+                    riding = true;
                 }
 
             }
-        }
-        catch (Exception e){
+        } catch (Exception e) {
 
         }
     /*
@@ -591,15 +588,12 @@ public class PickDropActivity extends AppCompatActivity implements PeerListListe
         }
 
         protected void onPostExecute(String result) {
-            if (!output.equals("ERROR")) {
-                //findViewById(R.id.textViewShowPoints);
-                //t.setText(output);
-
-            } else
+            if (output.equals("ERROR")) {
                 showError(); // warn user
 
+            }
         }
+
+
     }
-
-
 }
