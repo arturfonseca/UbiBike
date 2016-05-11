@@ -15,6 +15,7 @@ import android.os.IBinder;
 import android.os.Messenger;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Base64;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -26,26 +27,31 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.ObjectInputStream;
+import java.lang.reflect.Array;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 
 import pt.inesc.termite.wifidirect.SimWifiP2pBroadcast;
 import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
+import pt.inesc.termite.wifidirect.SimWifiP2pDeviceList;
 import pt.inesc.termite.wifidirect.SimWifiP2pInfo;
 import pt.inesc.termite.wifidirect.SimWifiP2pManager;
 import pt.inesc.termite.wifidirect.SimWifiP2pManager.Channel;
+import pt.inesc.termite.wifidirect.SimWifiP2pManager.GroupInfoListener;
+import pt.inesc.termite.wifidirect.SimWifiP2pManager.PeerListListener;
 import pt.inesc.termite.wifidirect.service.SimWifiP2pService;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketManager;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
-import pt.inesc.termite.wifidirect.SimWifiP2pDeviceList;
-import pt.inesc.termite.wifidirect.SimWifiP2pManager.PeerListListener;
-import pt.inesc.termite.wifidirect.SimWifiP2pManager.GroupInfoListener;
 import pt.ulisboa.tecnico.cmov.ubibike.domain.HtmlConnections;
 
-public class WifiPointsActivity extends AppCompatActivity implements PeerListListener, GroupInfoListener {
+public class PickDropActivity extends AppCompatActivity implements PeerListListener, GroupInfoListener {
 
     /* THIS CLASS SEND/RECEIVE PONTS WITH WIFI P2P AND ALSO TO SERVER */
 
@@ -71,6 +77,10 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
     private boolean isSendMenu = false;
     private boolean wantToReceive = false;
     private IncommingCommTask iCommTask = null;
+
+    private boolean riding = false;
+    boolean inside=false;
+    String insideStation="";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -107,7 +117,6 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
     }
 
 
-
     //- BUTTON CALLBACK -----------------------------------------------------------------------------
     private Switch.OnCheckedChangeListener listenerWifiSwitch = new CompoundButton.OnCheckedChangeListener() {
         @Override
@@ -115,7 +124,7 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
 
 
             if (isChecked) { // turn On
-                Intent intent = new Intent(WifiPointsActivity.this, SimWifiP2pService.class);
+                Intent intent = new Intent(PickDropActivity.this, SimWifiP2pService.class);
                 bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 
                 buttonUpdateOnState();
@@ -128,8 +137,8 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        mManager.requestPeers(mChannel, WifiPointsActivity.this);
-                        mManager.requestGroupInfo(mChannel, WifiPointsActivity.this);
+                        mManager.requestPeers(mChannel, PickDropActivity.this);
+                        mManager.requestGroupInfo(mChannel, PickDropActivity.this);
                     }
                 }, 3000);
 
@@ -147,8 +156,8 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
     private View.OnClickListener listenerSearchButton = new View.OnClickListener() {
         public void onClick(View v) {
             if (mBound) {
-                mManager.requestPeers(mChannel, WifiPointsActivity.this);
-                mManager.requestGroupInfo(mChannel, WifiPointsActivity.this);
+                mManager.requestPeers(mChannel, PickDropActivity.this);
+                mManager.requestGroupInfo(mChannel, PickDropActivity.this);
             } else {
                 Toast.makeText(v.getContext(), "Service not bound",
                         Toast.LENGTH_SHORT).show();
@@ -226,7 +235,7 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
     //-- PEER CHANGE DISPLAY UPDATE ------------------------------------------------------------------
     protected void updatePeersAvailable() {
         if (this.mBound) {
-            this.mManager.requestPeers(this.mChannel, WifiPointsActivity.this);
+            this.mManager.requestPeers(this.mChannel, PickDropActivity.this);
         } else {
             Toast.makeText(getApplicationContext(), "Service not bound",
                     Toast.LENGTH_SHORT).show();
@@ -237,25 +246,120 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
     public void onPeersAvailable(SimWifiP2pDeviceList simWifiP2pDeviceList) {
         String[] peersStr = new String[simWifiP2pDeviceList.getDeviceList().size()];
         int i = 0;
-
+       // ArrayList<String> bikes = new ArrayList<String>();
+        //ArrayList<String> stations = new ArrayList<String>();
+        String station="";
+        String bike="";
         // compile list of devices in range
         for (SimWifiP2pDevice device : simWifiP2pDeviceList.getDeviceList()) {
             String devstr = "" + device.deviceName + " (" + device.getVirtIp() + ")";
             peersStr[i] = devstr;
-
             this.peersIP.put(devstr, device.getVirtIp());
-
             i++;
+
+            if (device.deviceName.startsWith("station_")) {
+                station=device.deviceName;
+            } else if (device.deviceName.startsWith("bike_")) {
+                bike=device.deviceName;
+
+            }
+
         }
+        pickupEvent(station,bike);
+        dropoffEvent(station,bike);
         this.cAdapter.setPeersList(peersStr); // cAdapter updates list
         this.lv.setAdapter(this.cAdapter);
+
     }
+    private void dropoffEvent( String station,String bike) {
+        if(!riding)
+            return;
+        try{
+            if (!station.equals("")&&!bike.equals("")){
+                System.out.println(1+station+bike);
+                inside =true;
+                insideStation=station;
+            }
+            else if (station.equals("")&&bike.equals("")&&inside){
+                    String result = new GetResult().execute("dropoff:" + userName + "," + insideStation).get();
+                    Toast.makeText(getApplicationContext(), "Drop on "+insideStation, Toast.LENGTH_SHORT).show();
+                    inside=false;
+
+
+            }
+        }
+        catch (Exception e){
+
+        }
+
+    }
+
+
+    private void pickupEvent( String station,String bike) {
+        if(riding)
+            return;
+        try{
+            if (!station.equals("")&&!bike.equals("")){
+                System.out.println(1+station+bike);
+                inside =true;
+                insideStation=station;
+            }
+           else if (station.equals("")&&!bike.equals("")&&inside){
+                System.out.println(2+station+bike);
+                String booked = new GetResult().execute("booked:" + userName + "," + insideStation).get();
+                if (booked.equals("OK")){
+                    System.out.println(3+station+bike);
+                    String result = new GetResult().execute("pickup:" + userName + "," + insideStation).get();
+                    Toast.makeText(getApplicationContext(), "Pickup on "+insideStation, Toast.LENGTH_SHORT).show();
+                    inside=false;
+                    riding=true;
+                }
+
+            }
+        }
+        catch (Exception e){
+
+        }
+    /*
+        String booked = "BBBBB";
+        Toast.makeText(getApplicationContext(), device.deviceName, Toast.LENGTH_SHORT).show();
+        try {
+            if (riding){
+                if (!leftStation)
+                    continue;
+                String result = new GetResult().execute("dropoff:" + userName + "," + device.deviceName).get();
+                System.out.println(result);
+                riding=false;
+                Toast.makeText(getApplicationContext(), "´Dropoff on "+device.deviceName, Toast.LENGTH_SHORT).show();
+                continue;
+            }
+            else{
+                booked = new GetResult().execute("booked:" + userName + "," + device.deviceName).get();
+                Toast.makeText(getApplicationContext(), booked, Toast.LENGTH_SHORT).show();
+                if (booked.equals("OK")){
+                    String result = new GetResult().execute("pickup:" + userName + "," + device.deviceName).get();
+                    riding=true;
+                    leftStation=false;
+                    Toast.makeText(getApplicationContext(), "Pickup on "+device.deviceName, Toast.LENGTH_SHORT).show();
+                }
+
+
+            }
+
+
+
+        } catch (Exception e) {
+
+        }
+*/
+    }
+
 
     //- GROUP CHANGE DISPLAY UPDATE -----------------------------------------------------------------
     protected void updateGroupAvailable() {
         if (this.mBound) {
-            this.mManager.requestPeers(this.mChannel, WifiPointsActivity.this);
-            this.mManager.requestGroupInfo(this.mChannel, WifiPointsActivity.this);
+            this.mManager.requestPeers(this.mChannel, PickDropActivity.this);
+            this.mManager.requestGroupInfo(this.mChannel, PickDropActivity.this);
         } else {
             Toast.makeText(getApplicationContext(), "Service not bound",
                     Toast.LENGTH_SHORT).show();
@@ -335,7 +439,7 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
 
                     wantToReceive = false;
                 } //else
-                    //Thread.currentThread().interrupt();
+                //Thread.currentThread().interrupt();
             }
 
             return null;
@@ -348,7 +452,7 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
                         Toast.LENGTH_SHORT).show();
 
             /* UPDATE SERVER THAT WE RECEIVED POINTS --------- */
-                new GetResult().execute("incpoints:"+userName+","+values[0]);
+                new GetResult().execute("incpoints:" + userName + "," + values[0]);
 
             } else {
                 if (isSendMenu)
@@ -403,7 +507,7 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
             mTextInput.setText("");
 
             /* UPDATE SERVER THAT WE SENT POINTS --------- */
-            new GetResult().execute("decpoints:"+userName+","+result);
+            new GetResult().execute("decpoints:" + userName + "," + result);
 
             Toast.makeText(getApplicationContext(), "Sent " + result + " points",
                     Toast.LENGTH_SHORT).show();
@@ -458,8 +562,8 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
             this.buttonUpdateOnState();
             this.guiUpdateInitState();
 
-            this.mManager.requestPeers(this.mChannel, WifiPointsActivity.this);
-            this.mManager.requestGroupInfo(this.mChannel, WifiPointsActivity.this);
+            this.mManager.requestPeers(this.mChannel, PickDropActivity.this);
+            this.mManager.requestGroupInfo(this.mChannel, PickDropActivity.this);
 
             this.isSendMenu = false;
 
@@ -476,26 +580,26 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
         }
 
     }
+
     private class GetResult extends AsyncTask<String, Void, String> {
         String output;
 
         protected String doInBackground(String... url) {
             output = HtmlConnections.getResponse(url[0]);
             System.out.println(output);
-            return null;
+            return output;
         }
 
         protected void onPostExecute(String result) {
             if (!output.equals("ERROR")) {
-                System.out.println(output);
-                TextView t= (TextView)findViewById(R.id.textViewShowPoints);
-                t.setText(output);
+                //findViewById(R.id.textViewShowPoints);
+                //t.setText(output);
 
-            }
-            else
+            } else
                 showError(); // warn user
 
         }
     }
+
 
 }

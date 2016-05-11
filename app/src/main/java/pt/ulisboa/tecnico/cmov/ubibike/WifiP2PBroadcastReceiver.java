@@ -18,12 +18,14 @@ public class WifiP2PBroadcastReceiver extends BroadcastReceiver {
     private final Context mActivity;
     private final boolean isMessengerActivity;
     private final boolean isWifiPointsActivity;
+    private final boolean isPickDropActivity;
 
     public WifiP2PBroadcastReceiver(Context activity) {
         super();
         this.mActivity = activity;
         isMessengerActivity = (activity instanceof MessengerActivity);
         isWifiPointsActivity = (activity instanceof WifiPointsActivity);
+        isPickDropActivity = (activity instanceof PickDropActivity);
     }
 
     @Override
@@ -58,7 +60,11 @@ public class WifiP2PBroadcastReceiver extends BroadcastReceiver {
                 ((MessengerActivity) mActivity).updatePeersAvailable();
             } else if (isWifiPointsActivity) {
                 ((WifiPointsActivity) mActivity).updatePeersAvailable();
-            } else {
+            }
+         else if (isPickDropActivity) {
+            ((PickDropActivity) mActivity).updatePeersAvailable();
+        }
+            else {
                 Log.d(TAG, "ERROR P2P_PEERS_CHANGED getting class");
             }
 
@@ -77,7 +83,10 @@ public class WifiP2PBroadcastReceiver extends BroadcastReceiver {
                 ((MessengerActivity) mActivity).updateGroupAvailable();
             } else if (isWifiPointsActivity) {
                 ((WifiPointsActivity) mActivity).updateGroupAvailable();
-            } else {
+            }
+         else if (isPickDropActivity) {
+            ((PickDropActivity) mActivity).updateGroupAvailable();
+        }   else {
                 Log.d(TAG, "ERROR P2P_NETWORK_MEMBERSHIP_CHANGED getting class");
             }
 

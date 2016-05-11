@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.Hashtable;
 
 import pt.ulisboa.tecnico.cmov.ubibike.domain.HtmlConnections;
-import pt.ulisboa.tecnico.cmov.ubibike.domain.StationDetectorService;
 
 public class HomeActivity extends AppCompatActivity {
 
@@ -77,6 +76,14 @@ public class HomeActivity extends AppCompatActivity {
                 startActivity(new Intent(HomeActivity.this, WifiPointsActivity.class));
             }
         });
+        Button b6 = (Button) findViewById(R.id.buttonDetect);
+        assert b6 != null;
+        b6.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(HomeActivity.this, PickDropActivity.class));
+            }
+        });
     }
 
     private class GetResult extends AsyncTask<String, String, String> {
@@ -104,15 +111,8 @@ public class HomeActivity extends AppCompatActivity {
             startActivity(i);
         }
     }
-    // Start the service
-    public void startService(View view) {
-        startService(new Intent(this, StationDetectorService.class));
-    }
 
-    // Stop the service
-    public void stopService(View view) {
-        stopService(new Intent(this, StationDetectorService.class));
-    }
+
 
 
 }
