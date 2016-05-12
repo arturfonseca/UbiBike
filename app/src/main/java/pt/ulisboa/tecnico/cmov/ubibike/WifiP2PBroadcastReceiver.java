@@ -9,8 +9,6 @@ import android.content.Intent;
 import android.util.Log;
 import android.widget.Toast;
 
-import java.lang.reflect.Method;
-
 public class WifiP2PBroadcastReceiver extends BroadcastReceiver {
 
     private final String TAG = "WifiP2PBroadcastReceive";
@@ -87,14 +85,13 @@ public class WifiP2PBroadcastReceiver extends BroadcastReceiver {
 
         }
         /* NOT REALLY NEEDED, but useful for know who's GO and who's client
-         -------------------------------------------------------------------------
         else if (SimWifiP2pBroadcast.WIFI_P2P_GROUP_OWNERSHIP_CHANGED_ACTION.equals(action)) {
-            SimWifiP2pInfo ginfo = (SimWifiP2pInfo) intent.getSerializableExtra(
+            /*SimWifiP2pInfo ginfo = (SimWifiP2pInfo) intent.getSerializableExtra(
                     SimWifiP2pBroadcast.EXTRA_GROUP_INFO);
             ginfo.print();
             Toast.makeText(mActivity, "Group ownership changed",
                     Toast.LENGTH_SHORT).show();
-            mActivity.updateGroupAvailable();
+
         }*/
 
     }

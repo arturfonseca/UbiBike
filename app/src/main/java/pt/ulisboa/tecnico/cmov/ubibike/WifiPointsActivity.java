@@ -29,14 +29,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.UnknownHostException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 
 import pt.inesc.termite.wifidirect.SimWifiP2pBroadcast;
 import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
@@ -72,14 +68,13 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
 
     private ListView lv = null;
     private CustomAdapter cAdapter = null;
-    private LinkedHashMap<String, String> peersIP = new LinkedHashMap<>();
 
     private EditText mTextInput;
     private boolean isSendMenu = false;
     private boolean wantToReceive = false;
     private IncommingCommTask iCommTask = null;
 
-    private final long withinTimestamp = 60000;
+    private final long withinTimestamp = 60000; // 1 minute interval
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,7 +85,7 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
         this.guiUpdateInitState();
 
         // initialize the WDSim API
-        SimWifiP2pSocketManager.Init(this);
+        SimWifiP2pSocketManager.Init(getApplicationContext());
 
         this.cAdapter = new CustomAdapter(this);
 
@@ -107,7 +102,7 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_STATE_CHANGED_ACTION);
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_PEERS_CHANGED_ACTION);
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_NETWORK_MEMBERSHIP_CHANGED_ACTION);
-        filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_GROUP_OWNERSHIP_CHANGED_ACTION);
+        //filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_GROUP_OWNERSHIP_CHANGED_ACTION);
         this.mReceiver = new WifiP2PBroadcastReceiver(this);
         registerReceiver(this.mReceiver, filter);
     }
@@ -254,10 +249,9 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
                 continue; // ignore
             }
 
-            String devstr = "" + device.deviceName + " (" + device.getVirtIp() + ")";
+            String devstr = "" + device.deviceName + "|?" + device.getVirtIp();
             peersStr.add(devstr);
 
-            this.peersIP.put(devstr, device.getVirtIp());
         }
 
         this.cAdapter.setPeersList(peersStr); // cAdapter updates list
@@ -285,19 +279,15 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
                 continue; // ignore
             }
 
-            String deviceIP = simWifiP2pDeviceList.getByName(deviceName).getVirtIp();
-            String devstr = "" + deviceName + " (" + deviceIP + ")";
-
-            this.peersIP.put(devstr, deviceIP);
-
-            this.cAdapter.updatePeerImage(devstr);
+            // no need to update IP since before Group Update run Peer Update always
+            this.cAdapter.updateGroupImage(deviceName);
         }
 
         this.lv.setAdapter(this.cAdapter);
     }
 
     //- CONNECT TO GIVEN SERVER ---------------------------------------------------------------------
-    public void connectTo(String name) {
+    public void connectTo(String name, String peerIP) {
         setContentView(R.layout.activity_wifi_points);
         setSupportActionBar(((Toolbar) findViewById(R.id.toolbar)));
 
@@ -306,7 +296,7 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
         /* GET MY CURRENT POINTS AND SHOW */
         new GetResult().execute("getpoints:" + userName);
 
-        new OutgoingCommTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, this.peersIP.get(name));
+        new OutgoingCommTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, peerIP);
 
         findViewById(R.id.buttonSendPoints).setOnClickListener(listenerSendButton);
         findViewById(R.id.buttonCollectPoints).setOnClickListener(listenerReceiveButton);
@@ -319,7 +309,6 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
     private class IncommingCommTask extends AsyncTask<Void, String, Void> {
         @Override
         protected Void doInBackground(Void... params) {
-            long timestamp;
             try {
                 mSrvSocket = new SimWifiP2pSocketServer(Integer.parseInt(getString(R.string.points_port)));
             } catch (IOException e) {
@@ -334,16 +323,19 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
                         try {
                             BufferedReader sockIn = new BufferedReader(new InputStreamReader(sock.getInputStream()));
 
-                            timestamp = new Long(sockIn.readLine());  // first receive timeStamp
-                            if ((new Date().getTime() - timestamp) < withinTimestamp) { // if within one minute then is valid
+                            String temp = sockIn.readLine();
+                            if (temp != null) {
+                                long timestamp = Long.valueOf(temp);  // first receive timeStamp
+                                if ((new Date().getTime() - timestamp) < withinTimestamp) { // if within one minute then is valid
 
-                                String st = sockIn.readLine();
-                                if (st == null) {
-                                    publishProgress(null);
-                                    break;
+                                    String st = sockIn.readLine();
+                                    publishProgress(st);
+                                    sock.getOutputStream().write(("\n").getBytes());
                                 }
-                                publishProgress(st);
-                                sock.getOutputStream().write(("\n").getBytes());
+
+                            } else {
+                                publishProgress(null);
+                                break;
                             }
 
                         } catch (IOException e) {
@@ -521,20 +513,20 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
 
         protected String doInBackground(String... url) {
             output = HtmlConnections.getResponse(url[0]);
-            System.out.println(output);
-            return null;
+            //System.out.println(output);
+            return output;
         }
 
         protected void onPostExecute(String result) {
+            TextView t = (TextView) findViewById(R.id.textViewShowPoints);
             if (!output.equals("ERROR")) {
-                System.out.println(output);
-                TextView t = (TextView) findViewById(R.id.textViewShowPoints);
+                //System.out.println(output);
                 t.setText(output);
 
             } else
-                showError(1); // warn user
-
+                t.setText("ERROR");
         }
+
     }
 
 }

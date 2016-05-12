@@ -40,12 +40,8 @@ import pt.ulisboa.tecnico.cmov.ubibike.domain.HtmlConnections;
 
 public class PickDropActivity extends AppCompatActivity implements PeerListListener {
 
-
-    private final static String TAG = "WifiPointsActivity";
-
     private static final String PREFS_NAME = "UserAccount";
     private String userName = null;
-    private String name = null;
 
     private boolean mBound = false;
     private SimWifiP2pManager mManager = null;
@@ -65,26 +61,30 @@ public class PickDropActivity extends AppCompatActivity implements PeerListListe
 
 
         setContentView(R.layout.activity_list_items);
-        this.buttonUpdateOffState();
+        findViewById(R.id.buttonSearch).setEnabled(false);
         this.guiUpdateInitState();
 
         // initialize the WDSim API
         SimWifiP2pSocketManager.Init(this);
 
+
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        this.userName = settings.getString("userName", "");
+    }
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
         // register broadcast receiver
         IntentFilter filter = new IntentFilter();
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_STATE_CHANGED_ACTION);
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_PEERS_CHANGED_ACTION);
-        filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_NETWORK_MEMBERSHIP_CHANGED_ACTION);
-        filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_GROUP_OWNERSHIP_CHANGED_ACTION);
+        //filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_NETWORK_MEMBERSHIP_CHANGED_ACTION);
+        //filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_GROUP_OWNERSHIP_CHANGED_ACTION);
         this.mReceiver = new WifiP2PBroadcastReceiver(this);
         registerReceiver(this.mReceiver, filter);
-
-
-
-        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-        this.userName = settings.getString("userName", "");
-
     }
 
     @Override
@@ -104,10 +104,7 @@ public class PickDropActivity extends AppCompatActivity implements PeerListListe
                 Intent intent = new Intent(PickDropActivity.this, SimWifiP2pService.class);
                 bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
 
-                buttonUpdateOnState();
-
-                // spawn the chat server background task
-
+                findViewById(R.id.buttonSearch).setEnabled(true);
 
                 Handler handler = new Handler();
                 handler.postDelayed(new Runnable() {
@@ -123,7 +120,7 @@ public class PickDropActivity extends AppCompatActivity implements PeerListListe
                     unbindService(mConnection);
                     mBound = false;
                 }
-                buttonUpdateOffState();
+                findViewById(R.id.buttonSearch).setEnabled(false);
                 lv.setAdapter(null);
             }
         }
@@ -140,9 +137,6 @@ public class PickDropActivity extends AppCompatActivity implements PeerListListe
             }
         }
     };
-
-
-
 
 
     //- SOCKET CONNECTION TO BIND -------------------------------------------------------------------
@@ -174,18 +168,6 @@ public class PickDropActivity extends AppCompatActivity implements PeerListListe
         findViewById(R.id.buttonSearch).setOnClickListener(listenerSearchButton);
 
         this.lv = (ListView) findViewById(R.id.listView);
-    }
-
-    //- UPDATE BUTTON STATE ON ----------------------------------------------------------------------
-    private void buttonUpdateOnState() {
-        ((Switch) findViewById(R.id.switchWifi)).setChecked(true);
-        findViewById(R.id.buttonSearch).setEnabled(true);
-    }
-
-    //- UPDATE BUTTON STATE OFF ----------------------------------------------------------------------
-    private void buttonUpdateOffState() {
-        ((Switch) findViewById(R.id.switchWifi)).setChecked(false);
-        findViewById(R.id.buttonSearch).setEnabled(false);
     }
 
     //-- PEER CHANGE DISPLAY UPDATE ------------------------------------------------------------------
@@ -264,12 +246,6 @@ public class PickDropActivity extends AppCompatActivity implements PeerListListe
     }
 
 
-
-
-
-
-
-
     //- CONNECTION LOST ALERT DIALOG ----------------------------------------------------------------
     private void showError() {
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
@@ -285,9 +261,6 @@ public class PickDropActivity extends AppCompatActivity implements PeerListListe
         AlertDialog alertDialog = alertDialogBuilder.create();
         alertDialog.show();
     }
-
-
-
 
 
     private class GetResult extends AsyncTask<String, Void, String> {

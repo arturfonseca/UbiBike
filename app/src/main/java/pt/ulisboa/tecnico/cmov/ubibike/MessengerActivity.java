@@ -27,10 +27,10 @@ import android.widget.CompoundButton.OnCheckedChangeListener;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
 
 import pt.inesc.termite.wifidirect.SimWifiP2pBroadcast;
@@ -63,7 +63,6 @@ public class MessengerActivity extends AppCompatActivity implements PeerListList
 
     private ListView lv = null;
     private CustomAdapter cAdapter = null;
-    private LinkedHashMap<String, String> peersIP = new LinkedHashMap<>();
 
     private TextView mTextInput;
     private EditText mTextOutput;
@@ -97,7 +96,7 @@ public class MessengerActivity extends AppCompatActivity implements PeerListList
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_STATE_CHANGED_ACTION);
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_PEERS_CHANGED_ACTION);
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_NETWORK_MEMBERSHIP_CHANGED_ACTION);
-        filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_GROUP_OWNERSHIP_CHANGED_ACTION);
+        //filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_GROUP_OWNERSHIP_CHANGED_ACTION);
         this.mReceiver = new WifiP2PBroadcastReceiver(this);
         registerReceiver(this.mReceiver, filter);
     }
@@ -119,7 +118,6 @@ public class MessengerActivity extends AppCompatActivity implements PeerListList
                 bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
                 mBound = true;
 
-                System.err.println("========================================================================================> DOING ON");
                 findViewById(R.id.buttonSearch).setEnabled(true);
 
                 Handler handler = new Handler();
@@ -136,7 +134,7 @@ public class MessengerActivity extends AppCompatActivity implements PeerListList
                     unbindService(mConnection);
                     mBound = false;
                 }
-                System.err.println("========================================================================================> DOING OFF");
+
                 findViewById(R.id.buttonSearch).setEnabled(false);
                 lv.setAdapter(null);
             }
@@ -212,10 +210,9 @@ public class MessengerActivity extends AppCompatActivity implements PeerListList
                 continue; // ignore
             }
 
-            String devstr = "" + device.deviceName + " (" + device.getVirtIp() + ")";
+            String devstr = "" + device.deviceName + "|?" + device.getVirtIp();
             peersStr.add(devstr);
 
-            this.peersIP.put(devstr, device.getVirtIp());
         }
 
         this.cAdapter.setPeersList(peersStr); // cAdapter updates list
@@ -243,12 +240,8 @@ public class MessengerActivity extends AppCompatActivity implements PeerListList
                 continue; // ignore
             }
 
-            String deviceIP = simWifiP2pDeviceList.getByName(deviceName).getVirtIp();
-            String devstr = "" + deviceName + " (" + deviceIP + ")";
-
-            this.peersIP.put(devstr, deviceIP);
-
-            this.cAdapter.updatePeerImage(devstr);
+            // no need to update IP since before Group Update run Peer Update always
+            this.cAdapter.updateGroupImage(deviceName);
         }
 
         this.lv.setAdapter(this.cAdapter);
@@ -258,7 +251,7 @@ public class MessengerActivity extends AppCompatActivity implements PeerListList
     private void showError() {
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
         alertDialogBuilder.setTitle("Error");
-        alertDialogBuilder.setMessage("Connection to " + this.name + " LOST!");
+        alertDialogBuilder.setMessage("Connection to " + this.name + " lost!");
 
         alertDialogBuilder.setNeutralButton("OK", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface arg0, int arg1) {
@@ -271,7 +264,7 @@ public class MessengerActivity extends AppCompatActivity implements PeerListList
     }
 
     //- CONNECT TO GIVEN SERVER ---------------------------------------------------------------------
-    public void connectTo(String name) {
+    public void connectTo(String name, String peerIP) {
         setContentView(R.layout.activity_messenger);
 
         this.name = name;
@@ -283,7 +276,7 @@ public class MessengerActivity extends AppCompatActivity implements PeerListList
             isServerRunning = true;
         }
 
-        new OutgoingCommTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, this.peersIP.get(this.name));
+        new OutgoingCommTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, peerIP);
 
         findViewById(R.id.buttonSend).setOnClickListener(listenerSendButton);
         this.mTextInput = (TextView) findViewById(R.id.editTextToSend);
@@ -319,15 +312,16 @@ public class MessengerActivity extends AppCompatActivity implements PeerListList
                     BufferedReader sockIn = new BufferedReader(new InputStreamReader(sock.getInputStream()));
                     String st = sockIn.readLine();
                     if (st == null) {
-
                         if (count == 1) { // two times down => CANCEL
                             publishProgress(null);
                             break;
                         }
                         count++;
+
+                    } else {
+                        publishProgress(st);
+                        sock.getOutputStream().write(("\n").getBytes());
                     }
-                    publishProgress(st);
-                    sock.getOutputStream().write(("\n").getBytes());
 
                 } catch (IOException e) {
                     //Log.d("Error reading socket:", e.getMessage());

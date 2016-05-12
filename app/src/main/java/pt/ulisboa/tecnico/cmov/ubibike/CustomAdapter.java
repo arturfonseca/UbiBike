@@ -12,6 +12,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.location.places.personalized.PlaceAliasResult;
+
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -21,16 +23,18 @@ public class CustomAdapter extends BaseAdapter {
     private final String TAG = "CustomAdapter";
 
     private LinkedHashMap<String, Integer> peersList = new LinkedHashMap<>();
+    private LinkedHashMap<String, String> peersIP = new LinkedHashMap<>();
+
     private final Context mActivity;
     private final LayoutInflater inflater;
     private final boolean isMessengerActivity;
     private final boolean isWifiPointsActivity;
 
     public CustomAdapter(Context listActivity) {
-        mActivity = listActivity;
-        inflater = (LayoutInflater) mActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        isMessengerActivity = (listActivity instanceof MessengerActivity);
-        isWifiPointsActivity = (listActivity instanceof WifiPointsActivity);
+        this.mActivity = listActivity;
+        this.inflater = (LayoutInflater) mActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        this.isMessengerActivity = (listActivity instanceof MessengerActivity);
+        this.isWifiPointsActivity = (listActivity instanceof WifiPointsActivity);
     }
 
     @Override
@@ -40,36 +44,39 @@ public class CustomAdapter extends BaseAdapter {
 
     @Override
     public Object getItem(int position) {
-        // TODO Auto-generated method stub
         return position;
     }
 
     @Override
     public long getItemId(int position) {
-        // TODO Auto-generated method stub
         return position;
     }
 
     public void setPeersList(String[] name) {
-        if (!peersList.isEmpty())
-            peersList.clear();
+        this.peersList.clear(); // first clear
 
         for (String temp : name) {
-            peersList.put(temp, R.drawable.off_state);
+            String[] parsed = temp.split("|");
+
+            this.peersList.put(parsed[0], R.drawable.off_state);
+            this.peersIP.put(parsed[0], parsed[1]);
         }
     }
 
     public void setPeersList(List<String> name) {
-        if (!peersList.isEmpty())
-            peersList.clear();
+        this.peersList.clear(); // first clear
+        this.peersIP.clear(); // first clear
 
         for (String temp : name) {
-            peersList.put(temp, R.drawable.off_state);
+            String[] parsed = temp.split("\\|\\?");
+
+            this.peersList.put(parsed[0], R.drawable.off_state);
+            this.peersIP.put(parsed[0], parsed[1]);
         }
     }
 
-    public void updatePeerImage(String name) {
-        peersList.put(name, R.drawable.on_state);
+    public void updateGroupImage(String name) {
+        this.peersList.put(name, R.drawable.on_state);
     }
 
     public class Holder {
@@ -97,15 +104,17 @@ public class CustomAdapter extends BaseAdapter {
             public void onClick(View v) {
 
                 if (peersList.get(name) == R.drawable.on_state) {
-                    Toast.makeText(mActivity, "Clicked " + name, Toast.LENGTH_LONG).show();
 
                     // very bad approach
                     if (isMessengerActivity) {
-                        ((MessengerActivity) mActivity).connectTo(name);
+                        Toast.makeText(mActivity, "Clicked " + name, Toast.LENGTH_LONG).show();
+                        ((MessengerActivity) mActivity).connectTo(name, peersIP.get(name));
                     } else if (isWifiPointsActivity) {
-                        ((WifiPointsActivity) mActivity).connectTo(name);
+                        Toast.makeText(mActivity, "Clicked " + name, Toast.LENGTH_LONG).show();
+                        ((WifiPointsActivity) mActivity).connectTo(name, peersIP.get(name));
                     } else {
-                        Log.d(TAG, "ERROR Clicked_" + name+ " getting class");
+                        Toast.makeText(mActivity, "Try again", Toast.LENGTH_SHORT).show();
+                        Log.d(TAG, "ERROR Clicked_" + name + " getting class");
                     }
 
                 } else {
@@ -115,12 +124,33 @@ public class CustomAdapter extends BaseAdapter {
                             .setMessage("User " + name + " not in group!")
                             .setNeutralButton("OK", new DialogInterface.OnClickListener() {
                                 public void onClick(DialogInterface dialog, int which) {
+                                    // clicked OK
                                 }
                             })
                             .show();
                 }
             }
         });
+
+        rowView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+
+                // Show user more information about peer
+                new AlertDialog.Builder(mActivity)
+                        .setTitle("User")
+                        .setMessage("User: " + name + "\nIP: " + peersIP.get(name))
+                        .setNeutralButton("OK", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                // clicked OK
+                            }
+                        })
+                        .show();
+
+                return true;
+            }
+        });
+
         return rowView;
     }
 
