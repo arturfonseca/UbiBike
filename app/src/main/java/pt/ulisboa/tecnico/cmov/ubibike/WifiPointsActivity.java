@@ -29,9 +29,14 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.UnknownHostException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 
 import pt.inesc.termite.wifidirect.SimWifiP2pBroadcast;
 import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
@@ -73,6 +78,8 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
     private boolean isSendMenu = false;
     private boolean wantToReceive = false;
     private IncommingCommTask iCommTask = null;
+
+    private final long withinTimestamp = 60000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -297,7 +304,7 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
         this.name = name;
 
         /* GET MY CURRENT POINTS AND SHOW */
-        new GetResult().execute("getpoints:a");
+        new GetResult().execute("getpoints:" + userName);
 
         new OutgoingCommTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, this.peersIP.get(name));
 
@@ -312,6 +319,7 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
     private class IncommingCommTask extends AsyncTask<Void, String, Void> {
         @Override
         protected Void doInBackground(Void... params) {
+            long timestamp;
             try {
                 mSrvSocket = new SimWifiP2pSocketServer(Integer.parseInt(getString(R.string.points_port)));
             } catch (IOException e) {
@@ -325,13 +333,18 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
                         SimWifiP2pSocket sock = mSrvSocket.accept();
                         try {
                             BufferedReader sockIn = new BufferedReader(new InputStreamReader(sock.getInputStream()));
-                            String st = sockIn.readLine();
-                            if (st == null) {
-                                publishProgress(null);
-                                break;
+
+                            timestamp = new Long(sockIn.readLine());  // first receive timeStamp
+                            if ((new Date().getTime() - timestamp) < withinTimestamp) { // if within one minute then is valid
+
+                                String st = sockIn.readLine();
+                                if (st == null) {
+                                    publishProgress(null);
+                                    break;
+                                }
+                                publishProgress(st);
+                                sock.getOutputStream().write(("\n").getBytes());
                             }
-                            publishProgress(st);
-                            sock.getOutputStream().write(("\n").getBytes());
 
                         } catch (IOException e) {
                             // Log.d("Error reading socket:", e.getMessage());
@@ -396,6 +409,10 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
         @Override
         protected String doInBackground(String... msg) {
             try {
+                Date timestamp = new Date();
+                String time = String.valueOf(timestamp.getTime());
+
+                mCliSocket.getOutputStream().write((time + "\n").getBytes());
                 mCliSocket.getOutputStream().write((msg[0] + "\n").getBytes());
                 BufferedReader sockIn = new BufferedReader(new InputStreamReader(mCliSocket.getInputStream()));
                 sockIn.readLine();
