@@ -29,7 +29,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 import pt.inesc.termite.wifidirect.SimWifiP2pBroadcast;
 import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
@@ -43,6 +45,11 @@ import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 import pt.inesc.termite.wifidirect.SimWifiP2pDeviceList;
 import pt.inesc.termite.wifidirect.SimWifiP2pManager.PeerListListener;
 import pt.inesc.termite.wifidirect.SimWifiP2pManager.GroupInfoListener;
+
+/*
+TODO
+integridade nos pontos
+*/
 
 public class MessengerActivity extends AppCompatActivity implements PeerListListener, GroupInfoListener {
 
@@ -73,11 +80,21 @@ public class MessengerActivity extends AppCompatActivity implements PeerListList
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_list_items);
-        this.buttonUpdateOffState();
+        findViewById(R.id.buttonSearch).setEnabled(false);
         this.guiUpdateInitState();
 
         // initialize the WDSim API
-        SimWifiP2pSocketManager.Init(this);
+        SimWifiP2pSocketManager.Init(getApplicationContext());
+
+        this.cAdapter = new CustomAdapter(this);
+
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        this.userName = settings.getString("userName", "");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
 
         // register broadcast receiver
         IntentFilter filter = new IntentFilter();
@@ -87,17 +104,13 @@ public class MessengerActivity extends AppCompatActivity implements PeerListList
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_GROUP_OWNERSHIP_CHANGED_ACTION);
         this.mReceiver = new WifiP2PBroadcastReceiver(this);
         registerReceiver(this.mReceiver, filter);
-
-        this.cAdapter = new CustomAdapter(this);
-
-        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-        this.userName = settings.getString("userName", "");
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         unregisterReceiver(this.mReceiver);
+
     }
 
     //- BUTTON CALLBACK -----------------------------------------------------------------------------
@@ -108,8 +121,10 @@ public class MessengerActivity extends AppCompatActivity implements PeerListList
             if (isChecked) { // turn On
                 Intent intent = new Intent(MessengerActivity.this, SimWifiP2pService.class);
                 bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+                mBound = true;
 
-                buttonUpdateOnState();
+                System.err.println("========================================================================================> DOING ON");
+                findViewById(R.id.buttonSearch).setEnabled(true);
 
                 Handler handler = new Handler();
                 handler.postDelayed(new Runnable() {
@@ -125,7 +140,8 @@ public class MessengerActivity extends AppCompatActivity implements PeerListList
                     unbindService(mConnection);
                     mBound = false;
                 }
-                buttonUpdateOffState();
+                System.err.println("========================================================================================> DOING OFF");
+                findViewById(R.id.buttonSearch).setEnabled(false);
                 lv.setAdapter(null);
             }
         }
@@ -191,18 +207,21 @@ public class MessengerActivity extends AppCompatActivity implements PeerListList
 
     @Override
     public void onPeersAvailable(SimWifiP2pDeviceList simWifiP2pDeviceList) {
-        String[] peersStr = new String[simWifiP2pDeviceList.getDeviceList().size()];
-        int i = 0;
+        List<String> peersStr = new ArrayList<>();
 
         // compile list of devices in range
         for (SimWifiP2pDevice device : simWifiP2pDeviceList.getDeviceList()) {
+
+            if (device.deviceName.startsWith("bike_") || device.deviceName.startsWith("station_")) {
+                continue; // ignore
+            }
+
             String devstr = "" + device.deviceName + " (" + device.getVirtIp() + ")";
-            peersStr[i] = devstr;
+            peersStr.add(devstr);
 
             this.peersIP.put(devstr, device.getVirtIp());
-
-            i++;
         }
+
         this.cAdapter.setPeersList(peersStr); // cAdapter updates list
         this.lv.setAdapter(this.cAdapter);
     }
@@ -224,12 +243,16 @@ public class MessengerActivity extends AppCompatActivity implements PeerListList
         // compile list of network members
         for (String deviceName : simWifiP2pInfo.getDevicesInNetwork()) {
 
-            SimWifiP2pDevice device = simWifiP2pDeviceList.getByName(deviceName);
-            String devstr = "" + deviceName + " (" + device.getVirtIp() + ")";
+            if (deviceName.startsWith("bike_") || deviceName.startsWith("station_")) {
+                continue; // ignore
+            }
 
-            this.peersIP.put(devstr, device.getVirtIp());
+            String deviceIP = simWifiP2pDeviceList.getByName(deviceName).getVirtIp();
+            String devstr = "" + deviceName + " (" + deviceIP + ")";
 
-            this.cAdapter.updatePeerImg(devstr, R.drawable.on_state);
+            this.peersIP.put(devstr, deviceIP);
+
+            this.cAdapter.updatePeerImage(devstr);
         }
 
         this.lv.setAdapter(this.cAdapter);
@@ -257,14 +280,14 @@ public class MessengerActivity extends AppCompatActivity implements PeerListList
 
         this.name = name;
 
-        if (!this.isServerRunning) {
+        if (!isServerRunning) {
             // spawn the chat server background task
-            this.iCommTask = new IncommingCommTask();
-            this.iCommTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-            this.isServerRunning = true;
+            iCommTask = new IncommingCommTask();
+            iCommTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            isServerRunning = true;
         }
 
-        new OutgoingCommTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, this.peersIP.get(name));
+        new OutgoingCommTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, this.peersIP.get(this.name));
 
         findViewById(R.id.buttonSend).setOnClickListener(listenerSendButton);
         this.mTextInput = (TextView) findViewById(R.id.editTextToSend);
@@ -282,6 +305,7 @@ public class MessengerActivity extends AppCompatActivity implements PeerListList
             try {
                 mSrvSocket = new SimWifiP2pSocketServer(Integer.parseInt(getString(R.string.msg_port)));
             } catch (IOException e) {
+                System.err.println("mSrvSocket = new SimWifiP2pSocketServer(Integer.parseInt(getString(R.string.msg_port)));");
                 e.printStackTrace();
             }
 
@@ -289,10 +313,12 @@ public class MessengerActivity extends AppCompatActivity implements PeerListList
             try {
                 sock = mSrvSocket.accept();
             } catch (IOException e) {
+                System.err.println("sock = mSrvSocket.accept();");
                 e.printStackTrace();
             }
 
             while (!Thread.currentThread().isInterrupted()) {
+
                 try {
                     BufferedReader sockIn = new BufferedReader(new InputStreamReader(sock.getInputStream()));
                     String st = sockIn.readLine();
@@ -401,17 +427,17 @@ public class MessengerActivity extends AppCompatActivity implements PeerListList
         findViewById(R.id.buttonSearch).setEnabled(true);
     }
 
-    //- UPDATE BUTTON STATE OFF ----------------------------------------------------------------------
+    /*- UPDATE BUTTON STATE OFF ----------------------------------------------------------------------
     private void buttonUpdateOffState() {
-        ((Switch) findViewById(R.id.switchWifi)).setChecked(false);
+        //((Switch) findViewById(R.id.switchWifi)).setChecked(false);
         findViewById(R.id.buttonSearch).setEnabled(false);
-    }
+    } */
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
             onBackPressed();
-            return false;
+            return true;
         }
         return super.onKeyDown(keyCode, event);
     }
@@ -441,10 +467,16 @@ public class MessengerActivity extends AppCompatActivity implements PeerListList
             if (this.isServerRunning) {
                 this.iCommTask.cancel(true);
                 this.iCommTask = null;
+                try {
+                    this.mSrvSocket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                this.mSrvSocket = null;
             }
 
-            if (this.mBound) {
-                unbindService(this.mConnection);
+            if (mBound) {
+                unbindService(mConnection);
             }
 
             super.onBackPressed();

@@ -28,7 +28,9 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 import pt.inesc.termite.wifidirect.SimWifiP2pBroadcast;
 import pt.inesc.termite.wifidirect.SimWifiP2pDevice;
@@ -81,6 +83,16 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
         // initialize the WDSim API
         SimWifiP2pSocketManager.Init(this);
 
+        this.cAdapter = new CustomAdapter(this);
+
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        this.userName = settings.getString("userName", "");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
         // register broadcast receiver
         IntentFilter filter = new IntentFilter();
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_STATE_CHANGED_ACTION);
@@ -89,11 +101,6 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
         filter.addAction(SimWifiP2pBroadcast.WIFI_P2P_GROUP_OWNERSHIP_CHANGED_ACTION);
         this.mReceiver = new WifiP2PBroadcastReceiver(this);
         registerReceiver(this.mReceiver, filter);
-
-        this.cAdapter = new CustomAdapter(this);
-
-        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-        this.userName = settings.getString("userName", "");
     }
 
     @Override
@@ -227,18 +234,21 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
 
     @Override
     public void onPeersAvailable(SimWifiP2pDeviceList simWifiP2pDeviceList) {
-        String[] peersStr = new String[simWifiP2pDeviceList.getDeviceList().size()];
-        int i = 0;
+        List<String> peersStr = new ArrayList<>();
 
         // compile list of devices in range
         for (SimWifiP2pDevice device : simWifiP2pDeviceList.getDeviceList()) {
+
+            if (device.deviceName.startsWith("bike_") || device.deviceName.startsWith("station_")) {
+                continue; // ignore
+            }
+
             String devstr = "" + device.deviceName + " (" + device.getVirtIp() + ")";
-            peersStr[i] = devstr;
+            peersStr.add(devstr);
 
             this.peersIP.put(devstr, device.getVirtIp());
-
-            i++;
         }
+
         this.cAdapter.setPeersList(peersStr); // cAdapter updates list
         this.lv.setAdapter(this.cAdapter);
     }
@@ -260,12 +270,16 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
         // compile list of network members
         for (String deviceName : simWifiP2pInfo.getDevicesInNetwork()) {
 
-            SimWifiP2pDevice device = simWifiP2pDeviceList.getByName(deviceName);
-            String devstr = "" + deviceName + " (" + device.getVirtIp() + ")";
+            if (deviceName.startsWith("bike_") || deviceName.startsWith("station_")) {
+                continue; // ignore
+            }
 
-            this.peersIP.put(devstr, device.getVirtIp());
+            String deviceIP = simWifiP2pDeviceList.getByName(deviceName).getVirtIp();
+            String devstr = "" + deviceName + " (" + deviceIP + ")";
 
-            this.cAdapter.updatePeerImg(devstr, R.drawable.on_state);
+            this.peersIP.put(devstr, deviceIP);
+
+            this.cAdapter.updatePeerImage(devstr);
         }
 
         this.lv.setAdapter(this.cAdapter);
@@ -328,7 +342,7 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
 
                     wantToReceive = false;
                 } //else
-                    //Thread.currentThread().interrupt();
+                //Thread.currentThread().interrupt();
             }
 
             return null;
@@ -459,6 +473,12 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
             if (this.iCommTask != null) {
                 this.iCommTask.cancel(true);
                 this.iCommTask = null;
+                try {
+                    this.mSrvSocket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                this.mSrvSocket = null;
             }
 
             this.buttonUpdateOffState();

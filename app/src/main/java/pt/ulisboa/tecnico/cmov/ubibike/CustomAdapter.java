@@ -14,6 +14,7 @@ import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 
 public class CustomAdapter extends BaseAdapter {
 
@@ -58,8 +59,17 @@ public class CustomAdapter extends BaseAdapter {
         }
     }
 
-    public void updatePeerImg(String name, int img) {
-        peersList.put(name, img);
+    public void setPeersList(List<String> name) {
+        if (!peersList.isEmpty())
+            peersList.clear();
+
+        for (String temp : name) {
+            peersList.put(temp, R.drawable.off_state);
+        }
+    }
+
+    public void updatePeerImage(String name) {
+        peersList.put(name, R.drawable.on_state);
     }
 
     public class Holder {
