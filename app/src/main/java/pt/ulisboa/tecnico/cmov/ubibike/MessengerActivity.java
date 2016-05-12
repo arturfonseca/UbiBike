@@ -46,10 +46,6 @@ import pt.inesc.termite.wifidirect.SimWifiP2pDeviceList;
 import pt.inesc.termite.wifidirect.SimWifiP2pManager.PeerListListener;
 import pt.inesc.termite.wifidirect.SimWifiP2pManager.GroupInfoListener;
 
-/*
-TODO
-integridade nos pontos
-*/
 
 public class MessengerActivity extends AppCompatActivity implements PeerListListener, GroupInfoListener {
 

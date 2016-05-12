@@ -74,16 +74,5 @@
         android:layout_centerHorizontal="true" >
     </Button>
 
-    <Button
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/collect_tag"
-        android:id="@+id/buttonCollectPoints"
-        style="@style/ButtonText"
-        android:background="@drawable/btn_black"
-        android:layout_below="@+id/buttonSendPoints"
-        android:layout_centerHorizontal="true" >
-    </Button>
-
 
 </RelativeLayout>

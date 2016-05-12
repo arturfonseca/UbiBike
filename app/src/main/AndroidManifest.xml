@@ -77,6 +77,11 @@
             android:label="@string/title_activity_wifi_points"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustPan" />
+        <activity
+            android:name=".PickDropActivity"
+            android:label="Detect Pick/Drops"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustPan" />
 
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.

@@ -20,14 +20,13 @@ public final class HtmlConnections {
             URL textUrl = new URL(url + cmd);
             BufferedReader bufferReader = new BufferedReader(new InputStreamReader(textUrl.openStream()));
             String StringBuffer;
-
             while ((StringBuffer = bufferReader.readLine()) != null) {
                 stringText += StringBuffer;
             }
             bufferReader.close();
         } catch (Exception e) {
             e.printStackTrace();
-            stringText = "error";
+            stringText = "ERROR";
         }
         return stringText;
     }

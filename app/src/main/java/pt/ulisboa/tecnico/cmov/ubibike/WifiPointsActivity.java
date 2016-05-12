@@ -22,6 +22,7 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
@@ -44,6 +45,7 @@ import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 import pt.inesc.termite.wifidirect.SimWifiP2pDeviceList;
 import pt.inesc.termite.wifidirect.SimWifiP2pManager.PeerListListener;
 import pt.inesc.termite.wifidirect.SimWifiP2pManager.GroupInfoListener;
+import pt.ulisboa.tecnico.cmov.ubibike.domain.HtmlConnections;
 
 public class WifiPointsActivity extends AppCompatActivity implements PeerListListener, GroupInfoListener {
 
@@ -77,7 +79,7 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_list_items);
-        this.buttonUpdateOffState();
+        findViewById(R.id.buttonSearch).setEnabled(false);
         this.guiUpdateInitState();
 
         // initialize the WDSim API
@@ -115,6 +117,7 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
         @Override
         public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 
+
             if (isChecked) { // turn On
                 Intent intent = new Intent(WifiPointsActivity.this, SimWifiP2pService.class);
                 bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
@@ -139,7 +142,8 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
                     unbindService(mConnection);
                     mBound = false;
                 }
-                buttonUpdateOffState();
+
+                findViewById(R.id.buttonSearch).setEnabled(false);
                 lv.setAdapter(null);
             }
         }
@@ -216,11 +220,11 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
         findViewById(R.id.buttonSearch).setEnabled(true);
     }
 
-    //- UPDATE BUTTON STATE OFF ----------------------------------------------------------------------
+    /*/- UPDATE BUTTON STATE OFF ----------------------------------------------------------------------
     private void buttonUpdateOffState() {
         ((Switch) findViewById(R.id.switchWifi)).setChecked(false);
         findViewById(R.id.buttonSearch).setEnabled(false);
-    }
+    }*/
 
     //-- PEER CHANGE DISPLAY UPDATE ------------------------------------------------------------------
     protected void updatePeersAvailable() {
@@ -290,9 +294,10 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
         setContentView(R.layout.activity_wifi_points);
         setSupportActionBar(((Toolbar) findViewById(R.id.toolbar)));
 
-        /* GET MY CURRENT POINTS AND SHOW */
-
         this.name = name;
+
+        /* GET MY CURRENT POINTS AND SHOW */
+        new GetResult().execute("getpoints:a");
 
         new OutgoingCommTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, this.peersIP.get(name));
 
@@ -354,11 +359,12 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
                 Toast.makeText(getApplicationContext(), "Received " + values[0] + " points!",
                         Toast.LENGTH_SHORT).show();
 
-            /* UPDATE SERVER THAT WE RECEIVED POINTS --------- */
+                /* UPDATE SERVER THAT WE RECEIVED POINTS --------- */
+                new GetResult().execute("incpoints:" + userName + "," + values[0]);
 
             } else {
                 if (isSendMenu)
-                    showError();
+                    showError(0);
             }
         }
 
@@ -409,6 +415,7 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
             mTextInput.setText("");
 
             /* UPDATE SERVER THAT WE SENT POINTS --------- */
+            new GetResult().execute("decpoints:" + userName + "," + result);
 
             Toast.makeText(getApplicationContext(), "Sent " + result + " points",
                     Toast.LENGTH_SHORT).show();
@@ -417,16 +424,20 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
         @Override
         protected void onProgressUpdate(String... values) {
             if ((values == null) && isSendMenu)
-                showError();
+                showError(0);
         }
 
     }
 
     //- CONNECTION LOST ALERT DIALOG ----------------------------------------------------------------
-    private void showError() {
+    private void showError(int i) {
         AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
         alertDialogBuilder.setTitle("Error");
-        alertDialogBuilder.setMessage("Connection to " + this.name + " LOST!");
+
+        if (i == 0)
+            alertDialogBuilder.setMessage("Connection to " + this.name + " LOST!");
+        else
+            alertDialogBuilder.setMessage("Connection to server LOST!");
 
         alertDialogBuilder.setNeutralButton("OK", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface arg0, int arg1) {
@@ -481,10 +492,32 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
                 this.mSrvSocket = null;
             }
 
-            this.buttonUpdateOffState();
+            findViewById(R.id.buttonSearch).setEnabled(false);
 
             super.onBackPressed();
         }
 
     }
+
+    private class GetResult extends AsyncTask<String, Void, String> {
+        String output;
+
+        protected String doInBackground(String... url) {
+            output = HtmlConnections.getResponse(url[0]);
+            System.out.println(output);
+            return null;
+        }
+
+        protected void onPostExecute(String result) {
+            if (!output.equals("ERROR")) {
+                System.out.println(output);
+                TextView t = (TextView) findViewById(R.id.textViewShowPoints);
+                t.setText(output);
+
+            } else
+                showError(1); // warn user
+
+        }
+    }
+
 }

@@ -109,4 +109,16 @@
         android:layout_centerHorizontal="true">
     </Button>
 
+    <Button
+        style="@style/ButtonText"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="Detect Pick/Drop"
+        android:id="@+id/buttonDetect"
+        android:background="@drawable/btn_black"
+        android:layout_alignParentBottom="true"
+        android:layout_alignLeft="@+id/buttonWifiPoints"
+        android:layout_alignStart="@+id/buttonWifiPoints"
+        android:layout_marginBottom="45dp" />
+
 </RelativeLayout>

@@ -76,6 +76,14 @@ public class HomeActivity extends AppCompatActivity {
                 startActivity(new Intent(HomeActivity.this, WifiPointsActivity.class));
             }
         });
+        Button b6 = (Button) findViewById(R.id.buttonDetect);
+        assert b6 != null;
+        b6.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                startActivity(new Intent(HomeActivity.this, PickDropActivity.class));
+            }
+        });
     }
 
     private class GetResult extends AsyncTask<String, String, String> {
@@ -103,5 +111,8 @@ public class HomeActivity extends AppCompatActivity {
             startActivity(i);
         }
     }
+
+
+
 
 }
