@@ -45,6 +45,9 @@
     <string name="title_activity_trajectory_map">Map</string>
     <string name="title_activity_stations_map">Map</string>
 
+    <string name="UserInfoUserName">UserName:</string>
+    <string name="UserInfoUserPoints">Points:</string>
+
     <style name="ButtonText">
         <item name="android:layout_width">fill_parent</item>
         <item name="android:layout_height">wrap_content</item>

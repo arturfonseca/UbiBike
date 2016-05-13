@@ -36,6 +36,15 @@ public class UserActivity extends AppCompatActivity {
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         this.userName = settings.getString("userName", "");
 
+        Button getUserInfo = (Button) findViewById(R.id.buttonShowInfo);
+        getUserInfo.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                new GetPoints().execute("getpoints:"+userName);
+            }
+        });
+
         Button getLastTrajectory = (Button) findViewById(R.id.button4);
         getLastTrajectory.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -64,6 +73,23 @@ public class UserActivity extends AppCompatActivity {
         });
         */
     }
+
+    private class GetPoints extends AsyncTask<String, String, String> {
+
+        protected String doInBackground(String... url) {
+            return HtmlConnections.getResponse(url[0]);
+        }
+
+        protected void onPostExecute(String result) {
+            if (result.equals("ERROR")) {
+            }else{
+                Intent i = new Intent(UserActivity.this, UserInfoActivity.class);
+                i.putExtra("points",result);
+                startActivity(i);
+            }
+
+
+        }}
 
     private class GetLastTrajectory extends AsyncTask<String, String, String> {
 
