@@ -15,6 +15,7 @@ import android.util.Base64;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -25,8 +26,17 @@ import java.util.HashMap;
 import java.util.Hashtable;
 
 import pt.ulisboa.tecnico.cmov.ubibike.domain.HtmlConnections;
+import pt.ulisboa.tecnico.cmov.ubibike.domain.Status;
 
 public class HomeActivity extends AppCompatActivity {
+
+    @Override
+    protected void onStart(){
+        super.onStart();
+        TextView t = (TextView) findViewById(R.id.textViewStatus);
+        t.setText(Status.getS());
+
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

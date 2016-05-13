@@ -56,6 +56,7 @@ import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketManager;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
 import pt.ulisboa.tecnico.cmov.ubibike.domain.GPSCoordinate;
 import pt.ulisboa.tecnico.cmov.ubibike.domain.HtmlConnections;
+import pt.ulisboa.tecnico.cmov.ubibike.domain.Status;
 
 public class PickDropActivity extends AppCompatActivity implements PeerListListener {
 
@@ -233,6 +234,7 @@ public class PickDropActivity extends AppCompatActivity implements PeerListListe
                 inside = true;
                 insideStation = station;
             } else if (station.equals("") && bike.equals("") && inside) {
+                Status.setS("Not riding");
                 String result = new GetResult().execute("dropoff:" + userName + "," + insideStation).get();
                 Toast.makeText(getApplicationContext(), "Drop on " + insideStation, Toast.LENGTH_SHORT).show();
                 inside = false;
@@ -265,6 +267,7 @@ public class PickDropActivity extends AppCompatActivity implements PeerListListe
             } else if (station.equals("") && !bike.equals("") && inside) {
                 String booked = new GetResult().execute("booked:" + userName + "," + insideStation).get();
                 if (booked.equals("OK")) {
+                    Status.setS("Riding");
                     System.out.println(3 + station + bike);
                     String result = new GetResult().execute("pickup:" + userName + "," + insideStation).get();
                     Toast.makeText(getApplicationContext(), "Pickup on " + insideStation, Toast.LENGTH_SHORT).show();
