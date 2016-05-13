@@ -71,7 +71,7 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
 
     private EditText mTextInput;
     private boolean isSendMenu = false;
-    private boolean wantToReceive = false;
+    private boolean isServerRunning = false;
     private IncommingCommTask iCommTask = null;
 
     private final long withinTimestamp = 60000; // 1 minute interval
@@ -127,8 +127,11 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
                 buttonUpdateOnState();
 
                 // spawn the chat server background task
-                iCommTask = new IncommingCommTask();
-                iCommTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                if (!isServerRunning) {
+                    iCommTask = new IncommingCommTask();
+                    iCommTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    isServerRunning = true;
+                }
 
                 Handler handler = new Handler();
                 handler.postDelayed(new Runnable() {
@@ -175,13 +178,6 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
                         mTextInput.getText().toString());
 
             }
-        }
-    };
-
-    private View.OnClickListener listenerReceiveButton = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            wantToReceive = true;
         }
     };
 
@@ -299,8 +295,9 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
         new OutgoingCommTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, peerIP);
 
         findViewById(R.id.buttonSendPoints).setOnClickListener(listenerSendButton);
-        findViewById(R.id.buttonCollectPoints).setOnClickListener(listenerReceiveButton);
         this.mTextInput = (EditText) findViewById(R.id.extractPoints);
+
+        ((TextView) findViewById(R.id.textViewShowPoints)).setText(getString(R.string.upd_points_tag));
 
         this.isSendMenu = true;
     }
@@ -317,42 +314,35 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
 
             while (!Thread.currentThread().isInterrupted()) {
 
-                if (wantToReceive) {
+                try {
+                    SimWifiP2pSocket sock = mSrvSocket.accept();
                     try {
-                        SimWifiP2pSocket sock = mSrvSocket.accept();
-                        try {
-                            BufferedReader sockIn = new BufferedReader(new InputStreamReader(sock.getInputStream()));
+                        BufferedReader sockIn = new BufferedReader(new InputStreamReader(sock.getInputStream()));
 
-                            String temp = sockIn.readLine();
-                            if (temp != null) {
-                                long timestamp = Long.valueOf(temp);  // first receive timeStamp
-                                if ((new Date().getTime() - timestamp) < withinTimestamp) { // if within one minute then is valid
+                        String temp = sockIn.readLine();
+                        if (temp != null) {
+                            long timestamp = Long.valueOf(temp);  // first receive timeStamp
+                            if ((new Date().getTime() - timestamp) < withinTimestamp) { // if within one minute then is valid
 
-                                    String st = sockIn.readLine();
-                                    publishProgress(st);
-                                    sock.getOutputStream().write(("\n").getBytes());
-                                }
-
-                            } else {
-                                publishProgress(null);
-                                break;
+                                String st = sockIn.readLine();
+                                publishProgress(st);
+                                sock.getOutputStream().write(("\n").getBytes());
                             }
 
-                        } catch (IOException e) {
-                            // Log.d("Error reading socket:", e.getMessage());
-                            publishProgress(null);
-
-                        } finally {
-                            sock.close();
                         }
-                    } catch (IOException e) {
-                        // Log.d("Error socket:", e.getMessage());
-                        break;
-                    }
 
-                    wantToReceive = false;
-                } //else
-                //Thread.currentThread().interrupt();
+                    } catch (IOException e) {
+                        // Log.d("Error reading socket:", e.getMessage());
+                        publishProgress(null);
+
+                    } finally {
+                        sock.close();
+                    }
+                } catch (IOException e) {
+                    Log.d("Error socket:", e.getMessage());
+                    //break;
+
+                }
             }
 
             return null;
@@ -362,7 +352,7 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
         protected void onProgressUpdate(String... values) {
             if (values != null) {
                 Toast.makeText(getApplicationContext(), "Received " + values[0] + " points!",
-                        Toast.LENGTH_SHORT).show();
+                        Toast.LENGTH_LONG).show();
 
                 /* UPDATE SERVER THAT WE RECEIVED POINTS --------- */
                 new GetResult().execute("incpoints:" + userName + "," + values[0]);
@@ -509,24 +499,26 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
     }
 
     private class GetResult extends AsyncTask<String, Void, String> {
-        String output;
 
         protected String doInBackground(String... url) {
-            output = HtmlConnections.getResponse(url[0]);
+            String output = HtmlConnections.getResponse(url[0]);
             //System.out.println(output);
             return output;
         }
 
         protected void onPostExecute(String result) {
-            TextView t = (TextView) findViewById(R.id.textViewShowPoints);
-            if (!output.equals("ERROR")) {
-                //System.out.println(output);
-                t.setText(output);
-
-            } else
-                t.setText("ERROR");
+            if (isSendMenu) {
+                TextView t = (TextView) findViewById(R.id.textViewShowPoints);
+                if (result.equals("ERROR")) {
+                    t.setText("ERROR");
+                } else {
+                    //System.out.println(output);
+                    t.setText(result + " points");
+                }
+            }
         }
-
     }
 
+
 }
+

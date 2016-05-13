@@ -6,7 +6,7 @@
     <string name="title_activity_messenger">Messenger</string>
     <string name="title_activity_points">Points Menu</string>
     <string name="title_activity_user">User Menu</string>
-    <string name="title_activity_book">Booking</string>
+    <string name="title_user_info">User Information</string>
     <string name="title_activity_recent">Past Trajectories</string>
     <string name="title_activity_login">Login</string>
     <string name="title_activity_register">Register</string>
@@ -38,15 +38,14 @@
     <string name="pick_tag">Bike pick up</string>
     <string name="drop_tag">Bike drop off</string>
 
-    <string name="search_tag">Update</string>
+    <string name="search_tag">Refresh</string>
     <string name="turn_wifi_tag">Turn Wifi</string>
+
+    <string name="upd_points_tag">Updating points</string>
 
 
     <string name="title_activity_trajectory_map">Map</string>
     <string name="title_activity_stations_map">Map</string>
-
-    <string name="UserInfoUserName">UserName:</string>
-    <string name="UserInfoUserPoints">Points:</string>
 
     <style name="ButtonText">
         <item name="android:layout_width">fill_parent</item>

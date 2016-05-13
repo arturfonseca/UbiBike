@@ -32,6 +32,8 @@ public class PointsActivity extends AppCompatActivity {
         this.userName = settings.getString("userName", "");
         new GetResult().execute("getpoints:" + userName);
 
+        ((TextView) findViewById(R.id.textViewShowPoints)).setText(getString(R.string.upd_points_tag));
+
         Button fab = (Button) findViewById(R.id.buttonSendPoints);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -54,11 +56,14 @@ public class PointsActivity extends AppCompatActivity {
         }
 
         protected void onPostExecute(String result) {
+            ((EditText) findViewById(R.id.extractPoints)).setText("");
+            ((EditText) findViewById(R.id.extractUsername)).setText("");
+
             TextView t = (TextView) findViewById(R.id.textViewShowPoints);
 
             if (!output.equals("ERROR")) {
                 //System.out.println(output);
-                t.setText(output);
+                t.setText(output + " points");
             } else {
                 t.setText("ERROR");
                 showError();

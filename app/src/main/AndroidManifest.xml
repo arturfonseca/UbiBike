@@ -54,7 +54,7 @@
             android:windowSoftInputMode="adjustPan" />
         <activity
             android:name=".UserInfoActivity"
-            android:label="@string/title_activity_book"
+            android:label="@string/title_user_info"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustPan" />
         <activity

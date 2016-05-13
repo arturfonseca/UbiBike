@@ -41,7 +41,7 @@ public class UserActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                new GetPoints().execute("getpoints:"+userName);
+                startActivity(new Intent(UserActivity.this, UserInfoActivity.class));
             }
         });
 
@@ -62,34 +62,9 @@ public class UserActivity extends AppCompatActivity {
                 startActivity(new Intent(UserActivity.this,PastActivity.class));
             }
         });
-/*
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });
-        */
+
     }
 
-    private class GetPoints extends AsyncTask<String, String, String> {
-
-        protected String doInBackground(String... url) {
-            return HtmlConnections.getResponse(url[0]);
-        }
-
-        protected void onPostExecute(String result) {
-            if (result.equals("ERROR")) {
-            }else{
-                Intent i = new Intent(UserActivity.this, UserInfoActivity.class);
-                i.putExtra("points",result);
-                startActivity(i);
-            }
-
-
-        }}
 
     private class GetLastTrajectory extends AsyncTask<String, String, String> {
 

@@ -23,6 +23,8 @@ import pt.ulisboa.tecnico.cmov.ubibike.domain.HtmlConnections;
 public class UserInfoActivity extends AppCompatActivity {
 
     private static final String PREFS_NAME = "UserAccount";
+    private String userName;
+    private TextView points;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,15 +33,32 @@ public class UserInfoActivity extends AppCompatActivity {
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        TextView userName = (TextView) findViewById(R.id.textView5);
-
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-        userName.setText(settings.getString("userName", ""));
+        this.userName = settings.getString("userName", "");
 
-        String pointsText = getIntent().getStringExtra("points");
+        new GetPoints().execute("getpoints:" + userName);
 
-        TextView points = (TextView) findViewById(R.id.textView7);
-        points.setText(pointsText);
+        points = (TextView) findViewById(R.id.textView7);
+        points.setText(getString(R.string.upd_points_tag));
+
+        TextView user = (TextView) findViewById(R.id.textViewUsername);
+        user.setText(this.userName);
+
     }
 
+    private class GetPoints extends AsyncTask<String, String, String> {
+
+        protected String doInBackground(String... url) {
+            return HtmlConnections.getResponse(url[0]);
+        }
+
+        protected void onPostExecute(String result) {
+            if (result.equals("ERROR")) {
+                points.setText("Error");
+            } else {
+                points.setText(result + " points");
+            }
+
+        }
+    }
 }
