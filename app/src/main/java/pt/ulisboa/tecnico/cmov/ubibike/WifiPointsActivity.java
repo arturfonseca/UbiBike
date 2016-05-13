@@ -57,6 +57,7 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
     private static final String PREFS_NAME = "UserAccount";
     private String userName = null;
     private String name = null;
+    private int points = -1;
 
     private boolean mBound = false;
     private SimWifiP2pManager mManager = null;
@@ -169,13 +170,28 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
     private View.OnClickListener listenerSendButton = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
+            String text = mTextInput.getText().toString();
 
-            if (!mTextInput.getText().toString().equals("")) {
+            if (!text.equals("") && !text.equals("0")) {
 
-                //Integer toSend = new Integer(mTextInput.getText().toString());
+                String pointsReady;
+                int pointsSend;
+                try {
+                    pointsSend = Integer.parseInt(text);
+
+                } catch (NumberFormatException e) {
+                    mTextInput.setText("");
+                    return;
+                }
+
+                if (points != -1) {
+                    if (pointsSend > points)
+                        pointsSend = points;
+                }
+                pointsReady = String.valueOf(pointsSend);
 
                 new SendCommTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,
-                        mTextInput.getText().toString());
+                        pointsReady);
 
             }
         }
@@ -321,7 +337,7 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
 
                         String temp = sockIn.readLine();
                         if (temp != null) {
-                            long timestamp = Long.valueOf(temp);  // first receive timeStamp
+                            long timestamp = Long.parseLong(temp);  // first receive timeStamp
                             if ((new Date().getTime() - timestamp) < withinTimestamp) { // if within one minute then is valid
 
                                 String st = sockIn.readLine();
@@ -332,6 +348,10 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
                         }
 
                     } catch (IOException e) {
+                        // Log.d("Error reading socket:", e.getMessage());
+                        publishProgress(null);
+
+                    } catch (NumberFormatException e) {
                         // Log.d("Error reading socket:", e.getMessage());
                         publishProgress(null);
 
@@ -390,6 +410,7 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
     private class SendCommTask extends AsyncTask<String, String, String> {
         @Override
         protected String doInBackground(String... msg) {
+
             try {
                 Date timestamp = new Date();
                 String time = String.valueOf(timestamp.getTime());
@@ -511,9 +532,12 @@ public class WifiPointsActivity extends AppCompatActivity implements PeerListLis
                 TextView t = (TextView) findViewById(R.id.textViewShowPoints);
                 if (result.equals("ERROR")) {
                     t.setText("ERROR");
+                    points = -1;
+
                 } else {
                     //System.out.println(output);
                     t.setText(result + " points");
+                    points = Integer.parseInt(result);
                 }
             }
         }

@@ -6,11 +6,13 @@ import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.view.menu.ExpandedMenuView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import pt.ulisboa.tecnico.cmov.ubibike.domain.HtmlConnections;
 
@@ -20,6 +22,8 @@ public class PointsActivity extends AppCompatActivity {
 
     private String userName;
     private static final String PREFS_NAME = "UserAccount";
+
+    private int points = -1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,12 +42,35 @@ public class PointsActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                int points = Integer.parseInt(((EditText) findViewById(R.id.extractPoints)).getText().toString());
+                int pointsSend;
+                try {
+                    pointsSend = Integer.parseInt(((EditText) findViewById(R.id.extractPoints)).getText().toString());
+
+                } catch (NumberFormatException e) {
+                    ((EditText) findViewById(R.id.extractPoints)).setText("");
+                    ((EditText) findViewById(R.id.extractUsername)).setText("");
+                    return;
+                }
+                if (pointsSend == 0) {
+                    ((EditText) findViewById(R.id.extractPoints)).setText("");
+                    ((EditText) findViewById(R.id.extractUsername)).setText("");
+                    return;
+                }
+
+                if (points != -1) {
+                    if (pointsSend > points)
+                        pointsSend = points;
+                }
                 String user = ((EditText) findViewById(R.id.extractUsername)).getText().toString();
-                new GetResult().execute("transferpoints:" + userName + "," + points + "," + user);
+
+                new GetResult().execute("transferpoints:" + userName + "," + pointsSend + "," + user);
+
+                Toast.makeText(view.getContext(), "Sent " + pointsSend + " points",
+                        Toast.LENGTH_SHORT).show();
+
+
             }
         });
-
     }
 
     private class GetResult extends AsyncTask<String, Void, String> {
@@ -61,12 +88,15 @@ public class PointsActivity extends AppCompatActivity {
 
             TextView t = (TextView) findViewById(R.id.textViewShowPoints);
 
-            if (!output.equals("ERROR")) {
-                //System.out.println(output);
-                t.setText(output + " points");
-            } else {
+            if (output.equals("ERROR")) {
                 t.setText("ERROR");
                 showError();
+                points = -1;
+
+            } else {
+                //System.out.println(output);
+                t.setText(output + " points");
+                points = Integer.parseInt(result);
             }
 
         }
@@ -89,3 +119,4 @@ public class PointsActivity extends AppCompatActivity {
     }
 
 }
+

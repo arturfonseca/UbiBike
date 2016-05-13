@@ -61,6 +61,7 @@ import pt.ulisboa.tecnico.cmov.ubibike.domain.Status;
 public class PickDropActivity extends AppCompatActivity implements PeerListListener {
 
     private static final String PREFS_NAME = "UserAccount";
+    public static final String PREF_STATION = "Station";
     private String userName = null;
 
     private boolean mBound = false;
@@ -68,8 +69,6 @@ public class PickDropActivity extends AppCompatActivity implements PeerListListe
     private Messenger mService = null;
     private Channel mChannel = null;
     private WifiP2PBroadcastReceiver mReceiver = null;
-
-    private ListView lv = null;
 
     private static boolean riding = false;
     private static boolean inside = false;
@@ -79,7 +78,6 @@ public class PickDropActivity extends AppCompatActivity implements PeerListListe
     private static LocationManager locationManager;
     private static LocationListener locationListener;
 
-    public static final String PREF_STATION = "Station";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,6 +117,20 @@ public class PickDropActivity extends AppCompatActivity implements PeerListListe
         unregisterReceiver(mReceiver);
     }
 
+    // turn wifi on automatically
+    @Override
+    public void onStart() {
+        super.onStart();
+
+    }
+
+
+    // turn wifi off automatically
+    @Override
+    public void onStop() {
+        super.onStop();
+
+    }
 
     //- BUTTON CALLBACK -----------------------------------------------------------------------------
     private Switch.OnCheckedChangeListener listenerWifiSwitch = new CompoundButton.OnCheckedChangeListener() {
@@ -147,7 +159,6 @@ public class PickDropActivity extends AppCompatActivity implements PeerListListe
                     mBound = false;
                 }
                 findViewById(R.id.buttonSearch).setEnabled(false);
-                lv.setAdapter(null);
             }
         }
     };
@@ -192,8 +203,6 @@ public class PickDropActivity extends AppCompatActivity implements PeerListListe
 
         ((Switch) findViewById(R.id.switchWifi)).setOnCheckedChangeListener(listenerWifiSwitch);
         findViewById(R.id.buttonSearch).setOnClickListener(listenerSearchButton);
-
-        this.lv = (ListView) findViewById(R.id.listView);
     }
 
     //-- PEER CHANGE DISPLAY UPDATE ------------------------------------------------------------------
@@ -239,15 +248,15 @@ public class PickDropActivity extends AppCompatActivity implements PeerListListe
                 Toast.makeText(getApplicationContext(), "Drop on " + insideStation, Toast.LENGTH_SHORT).show();
                 inside = false;
                 int gpsPermission = ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION);
-                if(gpsPermission == PackageManager.PERMISSION_GRANTED) {
+                if (gpsPermission == PackageManager.PERMISSION_GRANTED) {
                     locationManager.removeUpdates(locationListener);
                 }
                 DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd@HH.mm.ss");
                 Calendar c = Calendar.getInstance();
                 String TrajectoryToString = ObjectToString(trajectory).split("\n")[0];
-                Log.d("aruments","addTrajectory:" + this.userName + "," + dateFormat.format(c.getTime()) + "," + TrajectoryToString + "," + Integer.toString(trajectory.size()));
+                Log.d("aruments", "addTrajectory:" + this.userName + "," + dateFormat.format(c.getTime()) + "," + TrajectoryToString + "," + Integer.toString(trajectory.size()));
                 new SendTrajectory().execute("addTrajectory:" + this.userName + "," + dateFormat.format(c.getTime()) + "," + TrajectoryToString + "," + Integer.toString(trajectory.size()));
-                Log.d("String",TrajectoryToString);
+                Log.d("String", TrajectoryToString);
                 trajectory.clear();
             }
         } catch (Exception e) {
@@ -275,10 +284,10 @@ public class PickDropActivity extends AppCompatActivity implements PeerListListe
                     locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
                     locationListener = new MyLocationListener();
                     int gpsPermission = ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION);
-                    if(gpsPermission == PackageManager.PERMISSION_GRANTED) {
+                    if (gpsPermission == PackageManager.PERMISSION_GRANTED) {
                         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10, locationListener);
                     }
-                    SharedPreferences settings = getSharedPreferences(PREF_STATION+userName,0);
+                    SharedPreferences settings = getSharedPreferences(PREF_STATION + userName, 0);
                     SharedPreferences.Editor editor = settings.edit();
                     editor.putString("station", "null");
                     editor.apply();
@@ -348,35 +357,38 @@ public class PickDropActivity extends AppCompatActivity implements PeerListListe
             double latitude = location.getLatitude();
             double longitude = location.getLongitude();
             //Toast.makeText(thisActivity,"Latitude: "+ latitude+" Longitude: "+longitude,Toast.LENGTH_SHORT).show();
-            Log.v("--",latitude+";"+longitude);
-            trajectory.add(new GPSCoordinate(latitude,longitude));
+            Log.v("--", latitude + ";" + longitude);
+            trajectory.add(new GPSCoordinate(latitude, longitude));
         }
 
         @Override
-        public void onStatusChanged(String provider, int status, Bundle extras) {}
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+        }
 
         @Override
-        public void onProviderEnabled(String provider) {}
+        public void onProviderEnabled(String provider) {
+        }
 
         @Override
-        public void onProviderDisabled(String provider) {}
+        public void onProviderDisabled(String provider) {
+        }
     }
 
     private class SendTrajectory extends AsyncTask<String, String, String> {
 
         protected String doInBackground(String... url) {
-            Log.d("url",url[0]);
+            Log.d("url", url[0]);
             return HtmlConnections.getResponse(url[0]);
         }
 
         protected void onPostExecute(String result) {
             if (result.equals("ERROR")) {
-               showTrajectoryError(); // warn user
+                showTrajectoryError(); // warn user
             }
         }
     }
 
-    private String ObjectToString(Object object){
+    private String ObjectToString(Object object) {
         byte[] buff = null;
 
         ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -388,7 +400,7 @@ public class PickDropActivity extends AppCompatActivity implements PeerListListe
         } catch (IOException e) {
             e.printStackTrace();
         }
-        Log.d("String",Base64.encodeToString(buff,Base64.DEFAULT));
-        return Base64.encodeToString(buff,Base64.NO_WRAP);
+        Log.d("String", Base64.encodeToString(buff, Base64.DEFAULT));
+        return Base64.encodeToString(buff, Base64.NO_WRAP);
     }
 }
