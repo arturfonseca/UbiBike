@@ -1,10 +1,14 @@
 package pt.ulisboa.tecnico.cmov.ubibike;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Base64;
@@ -28,6 +32,11 @@ public class HomeActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
+
+        int gpsPermission = ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION);
+        if(gpsPermission != PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.ACCESS_FINE_LOCATION},0);
+        }
         // Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         //setSupportActionBar(toolbar);
 
@@ -95,7 +104,7 @@ public class HomeActivity extends AppCompatActivity {
         protected void onPostExecute(String result) {
             HashMap<String,String> stations = new HashMap<String,String>();
             if(!result.equals("error")){
-                byte[] buff = Base64.decode(result,Base64.DEFAULT);
+                byte[] buff = Base64.decode(result,Base64.NO_WRAP);
                 try {
                     ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(buff));
                     stations = (HashMap<String,String>) ois.readObject();

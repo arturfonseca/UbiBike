@@ -10,7 +10,8 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".PastActivity"
-    tools:showIn="@layout/activity_past">
+    tools:showIn="@layout/activity_past"
+    android:background="@drawable/back2">
 
     <ListView
         android:layout_width="wrap_content"

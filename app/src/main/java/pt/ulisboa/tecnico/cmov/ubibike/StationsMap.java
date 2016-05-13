@@ -35,6 +35,7 @@ public class StationsMap extends FragmentActivity implements OnMapReadyCallback,
     public static final String PREFS_NAME = "UserAccount";
     public static final String PREF_STATION = "Station";
     private String currentStation;
+    private String userName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,7 +74,9 @@ public class StationsMap extends FragmentActivity implements OnMapReadyCallback,
 
     @Override
     public boolean onMarkerClick(Marker marker) {
-        SharedPreferences station = getSharedPreferences(PREF_STATION,0);
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        userName = settings.getString("userName", "");
+        SharedPreferences station = getSharedPreferences(PREF_STATION+userName,0);
         if(station.getString("station","null").equals("null")){
             String coordinates = marker.getPosition().latitude + "," + marker.getPosition().longitude;
             currentStation = stations.get(coordinates);
@@ -82,8 +85,6 @@ public class StationsMap extends FragmentActivity implements OnMapReadyCallback,
                     .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-                            String userName = settings.getString("userName", "");
                             new GetResult().execute("book:" + userName + "," + currentStation);
                         }
                     })
@@ -108,7 +109,7 @@ public class StationsMap extends FragmentActivity implements OnMapReadyCallback,
         protected void onPostExecute(String result) {
             if(!result.equals("error")){}
                 Toast.makeText(thisActivity,"Bike Booked",Toast.LENGTH_LONG).show();
-                SharedPreferences settings = getSharedPreferences(PREF_STATION,0);
+                SharedPreferences settings = getSharedPreferences(PREF_STATION+userName,0);
                 SharedPreferences.Editor editor = settings.edit();
                 editor.putString("station", currentStation);
                 editor.apply();

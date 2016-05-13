@@ -27,24 +27,13 @@
     <Button
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="@string/send_traj_tag"
-        android:id="@+id/button3"
-        style="@style/ButtonText"
-        android:background="@drawable/btn_black"
-        android:layout_below="@+id/buttonShowInfo"
-        android:layout_centerHorizontal="true" >
-    </Button>
-
-    <Button
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
         android:text="@string/recent_tag"
         android:id="@+id/button4"
         style="@style/ButtonText"
         android:background="@drawable/btn_black"
         android:layout_marginTop="30dp"
-        android:layout_below="@+id/button3"
-        android:layout_centerHorizontal="true" >
+        android:layout_centerHorizontal="true"
+        android:layout_below="@+id/buttonShowInfo">
     </Button>
 
     <Button

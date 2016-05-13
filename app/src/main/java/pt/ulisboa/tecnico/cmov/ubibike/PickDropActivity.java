@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.cmov.ubibike;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
@@ -8,13 +9,20 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Messenger;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Base64;
+import android.util.Log;
 import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -24,6 +32,16 @@ import android.widget.Switch;
 import android.widget.Toast;
 
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 
 import pt.inesc.termite.wifidirect.SimWifiP2pBroadcast;
@@ -36,6 +54,7 @@ import pt.inesc.termite.wifidirect.service.SimWifiP2pService;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocket;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketManager;
 import pt.inesc.termite.wifidirect.sockets.SimWifiP2pSocketServer;
+import pt.ulisboa.tecnico.cmov.ubibike.domain.GPSCoordinate;
 import pt.ulisboa.tecnico.cmov.ubibike.domain.HtmlConnections;
 
 public class PickDropActivity extends AppCompatActivity implements PeerListListener {
@@ -54,6 +73,12 @@ public class PickDropActivity extends AppCompatActivity implements PeerListListe
     private static boolean riding = false;
     private static boolean inside = false;
     private static String insideStation = "";
+
+    private static ArrayList<GPSCoordinate> trajectory = new ArrayList<GPSCoordinate>();
+    private static LocationManager locationManager;
+    private static LocationListener locationListener;
+
+    public static final String PREF_STATION = "Station";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -211,8 +236,17 @@ public class PickDropActivity extends AppCompatActivity implements PeerListListe
                 String result = new GetResult().execute("dropoff:" + userName + "," + insideStation).get();
                 Toast.makeText(getApplicationContext(), "Drop on " + insideStation, Toast.LENGTH_SHORT).show();
                 inside = false;
-
-
+                int gpsPermission = ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION);
+                if(gpsPermission == PackageManager.PERMISSION_GRANTED) {
+                    locationManager.removeUpdates(locationListener);
+                }
+                DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd@HH.mm.ss");
+                Calendar c = Calendar.getInstance();
+                String TrajectoryToString = ObjectToString(trajectory).split("\n")[0];
+                Log.d("aruments","addTrajectory:" + this.userName + "," + dateFormat.format(c.getTime()) + "," + TrajectoryToString + "," + Integer.toString(trajectory.size()));
+                new SendTrajectory().execute("addTrajectory:" + this.userName + "," + dateFormat.format(c.getTime()) + "," + TrajectoryToString + "," + Integer.toString(trajectory.size()));
+                Log.d("String",TrajectoryToString);
+                trajectory.clear();
             }
         } catch (Exception e) {
 
@@ -235,6 +269,16 @@ public class PickDropActivity extends AppCompatActivity implements PeerListListe
                     String result = new GetResult().execute("pickup:" + userName + "," + insideStation).get();
                     Toast.makeText(getApplicationContext(), "Pickup on " + insideStation, Toast.LENGTH_SHORT).show();
                     riding = true;
+                    locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+                    locationListener = new MyLocationListener();
+                    int gpsPermission = ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION);
+                    if(gpsPermission == PackageManager.PERMISSION_GRANTED) {
+                        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 10, locationListener);
+                    }
+                    SharedPreferences settings = getSharedPreferences(PREF_STATION+userName,0);
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.putString("station", "null");
+                    editor.apply();
                 }
                 inside = false;
 
@@ -262,6 +306,21 @@ public class PickDropActivity extends AppCompatActivity implements PeerListListe
         alertDialog.show();
     }
 
+    private void showTrajectoryError() {
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setTitle("Error");
+        alertDialogBuilder.setMessage("Could not send trajectory to server");
+
+        alertDialogBuilder.setNeutralButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface arg0, int arg1) {
+                // User clicked OK
+            }
+        });
+
+        AlertDialog alertDialog = alertDialogBuilder.create();
+        alertDialog.show();
+    }
+
 
     private class GetResult extends AsyncTask<String, Void, String> {
         String output;
@@ -278,7 +337,55 @@ public class PickDropActivity extends AppCompatActivity implements PeerListListe
 
             }
         }
+    }
 
+    private class MyLocationListener implements LocationListener {
+        @Override
+        public void onLocationChanged(Location location) {
+            double latitude = location.getLatitude();
+            double longitude = location.getLongitude();
+            //Toast.makeText(thisActivity,"Latitude: "+ latitude+" Longitude: "+longitude,Toast.LENGTH_SHORT).show();
+            Log.v("--",latitude+";"+longitude);
+            trajectory.add(new GPSCoordinate(latitude,longitude));
+        }
 
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {}
+
+        @Override
+        public void onProviderEnabled(String provider) {}
+
+        @Override
+        public void onProviderDisabled(String provider) {}
+    }
+
+    private class SendTrajectory extends AsyncTask<String, String, String> {
+
+        protected String doInBackground(String... url) {
+            Log.d("url",url[0]);
+            return HtmlConnections.getResponse(url[0]);
+        }
+
+        protected void onPostExecute(String result) {
+            if (result.equals("ERROR")) {
+               showTrajectoryError(); // warn user
+            }
+        }
+    }
+
+    private String ObjectToString(Object object){
+        byte[] buff = null;
+
+        ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        try {
+            ObjectOutputStream oos = new ObjectOutputStream(bos);
+            oos.writeObject(object);
+            buff = bos.toByteArray();
+            oos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        Log.d("String",Base64.encodeToString(buff,Base64.DEFAULT));
+        return Base64.encodeToString(buff,Base64.NO_WRAP);
     }
 }
