@@ -63,11 +63,11 @@ public class PastActivity extends AppCompatActivity {
         protected void onPostExecute(String result) {
             if (result.equals("ERROR")) {
                 showTrajectoryError(); // warn user
-            }
-            _trajectories = parseDatesFromServer(result);
-            Log.d("Trajectory", Arrays.toString(_trajectories.toArray()));
-            _adapter = new ArrayAdapter<String>(PastActivity.this,android.R.layout.simple_list_item_1,_trajectories);
-            _listView.setAdapter(_adapter);
+            }else{
+                _trajectories = parseDatesFromServer(result);
+                Log.d("Trajectory", Arrays.toString(_trajectories.toArray()));
+                _adapter = new ArrayAdapter<String>(PastActivity.this,android.R.layout.simple_list_item_1,_trajectories);
+                _listView.setAdapter(_adapter);}
         }
     }
 
@@ -80,7 +80,7 @@ public class PastActivity extends AppCompatActivity {
         protected void onPostExecute(String result) {
             if (result.equals("ERROR")) {
                 showTrajectoryError(); // warn user
-            }
+            }else{
             _trajectory = parseTrajectoryFromServer(result);
             Log.d("GPS","Starting the count");
             for(GPSCoordinate g: _trajectory){
@@ -88,7 +88,7 @@ public class PastActivity extends AppCompatActivity {
             }
             Intent i = new Intent(PastActivity.this,TrajectoryMapActivity.class);
             i.putExtra("trajectory",_trajectory);
-            startActivity(i);
+            startActivity(i);}
 
         }
     }

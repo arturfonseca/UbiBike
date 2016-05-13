@@ -75,16 +75,16 @@ public class UserActivity extends AppCompatActivity {
         protected void onPostExecute(String result) {
             if (result.equals("ERROR")) {
                 showTrajectoryError(); // warn user
+            }else {
+                ArrayList<GPSCoordinate> _trajectory = parseTrajectoryFromServer(result);
+                Log.d("GPS", "Starting the count");
+                for (GPSCoordinate g : _trajectory) {
+                    Log.d("GPS", Double.toString(g.getLatitude()));
+                }
+                Intent i = new Intent(UserActivity.this, TrajectoryMapActivity.class);
+                i.putExtra("trajectory", _trajectory);
+                startActivity(i);
             }
-            ArrayList<GPSCoordinate> _trajectory = parseTrajectoryFromServer(result);
-            Log.d("GPS","Starting the count");
-            for(GPSCoordinate g: _trajectory){
-                Log.d("GPS",Double.toString(g.getLatitude()));
-            }
-            Intent i = new Intent(UserActivity.this,TrajectoryMapActivity.class);
-            i.putExtra("trajectory",_trajectory);
-            startActivity(i);
-
         }}
 
         private ArrayList<GPSCoordinate> parseTrajectoryFromServer(String result){
